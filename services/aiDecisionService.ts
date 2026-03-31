@@ -39,14 +39,15 @@ function isFuzzyMatch(input: string, target: string, threshold = 2): boolean {
 
 // 🧠 SMART INTENT DETECTOR
 function detectIntentSmart(message: string): string | null {
-  const clean = message.toLowerCase().trim();
+  // 1. NORMALIZE (Lower, trim, remove extra internal spaces for "softwar e team")
+  let clean = message.toLowerCase().trim().replace(/\s+/g, ' ');
 
-  // 1. CONVERSATIONAL FILLERS
+  // 2. CONVERSATIONAL FILLERS
   if (["mm", "hmm", "hm", "uh", "um"].includes(clean)) return "SMALL_TALK_ACK";
   if (["ok", "k", "okay", "cool", "nice", "good", "great"].includes(clean)) return "SMALL_TALK_POS";
   if (["lol", "haha", "thanks", "thx", "thank you"].includes(clean)) return "SMALL_TALK_THANKS";
 
-  // 2. HARDCODED SHORTCUTS
+  // 3. HARDCODED SHORTCUTS
   if (clean.includes("humi") && !clean.includes("explain") && !clean.includes("what is humidity")) return "HUMIDITY_QUERY";
   if (clean.includes("temp") && !clean.includes("explain") && !clean.includes("what is temperature")) return "TEMP_QUERY";
   if ((clean.includes("soil") && !clean.includes("what is soil") && !clean.includes("explain")) || clean.includes("moist")) return "SOIL_QUERY";
@@ -58,33 +59,45 @@ function detectIntentSmart(message: string): string | null {
   if (clean.includes("weather")) return "WEATHER_QUERY";
   if (clean.includes("ping") || clean.includes("latency")) return "LATENCY_QUERY";
 
-  // 3. DATE & TIME DISTINCTION
+  // 4. DATE & TIME DISTINCTION
   if (clean === "time" || clean.includes("clock")) return "TIME_QUERY";
   if (clean === "date" || clean === "day" || clean.includes("today")) return "DATE_QUERY";
 
-  // 4. CHECK HUGE INTENT FILE
+  // 5. CHECK HUGE INTENT FILE
   const allIntents = { ...INTENTS, ...INTENTS_EXTENDED };
   for (const [key, phrases] of Object.entries(allIntents)) {
     // @ts-ignore
     for (const phrase of phrases) {
       const p = phrase.toLowerCase();
-      if (clean === p) return key;
-      if (p.length < 3) continue;
+      // Exact or simple inclusion
+      if (clean === p || clean.includes(p)) return key;
+      // Word boundary regex
       const escaped = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(`\\b${escaped}\\b`, 'i');
       if (regex.test(clean)) return key;
     }
   }
 
-  // 5. FUZZY MATCH (Fallback)
+  // 6. FUZZY MATCH (Fallback for typos like "hardarew")
   const words = clean.split(" ");
   for (const word of words) {
     if (word.length < 4) continue;
+    // Hardware typos
+    if (isFuzzyMatch(word, "hardware", 2)) return "TEAM_QUERY";
+    if (isFuzzyMatch(word, "software", 2)) return "TEAM_QUERY";
+    if (isFuzzyMatch(word, "college", 2)) return "ACADEMIC_QUERY";
+    if (isFuzzyMatch(word, "founders", 2)) return "TEAM_QUERY";
+    
+    // Original NPK fuzzy
     if (isFuzzyMatch(word, "phosphorus")) return "NPK_PHOSPHORUS";
     if (isFuzzyMatch(word, "nitrogen")) return "NPK_NITROGEN";
     if (isFuzzyMatch(word, "potassium")) return "NPK_POTASSIUM";
     if (isFuzzyMatch(word, "humidity")) return "HUMIDITY_QUERY";
   }
+
+  // 7. BRUTE FORCE KEYWORD CHECK (No boundary)
+  if (clean.includes("softwar")) return "TEAM_QUERY";
+  if (clean.includes("hardwar")) return "TEAM_QUERY";
 
   return null;
 }
