@@ -10,7 +10,21 @@
             --primary: #10b981;
             --secondary: #064e3b;
             --bg: #f8fafc;
+            --card-bg: white;
+            --card-border: #e2e8f0;
             --text: #1e293b;
+            --subtext: #64748b;
+            --title: #064e3b;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f172a;
+                --card-bg: #1e293b;
+                --card-border: #334155;
+                --text: #f1f5f9;
+                --subtext: #94a3b8;
+                --title: #10b981;
+            }
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -19,18 +33,40 @@
             margin: 0;
             padding: 40px;
             line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
+            background: var(--card-bg);
             padding: 60px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-radius: 24px;
+            position: relative;
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: var(--subtext);
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(100, 116, 139, 0.1);
+            padding: 6px 12px;
             border-radius: 20px;
+            transition: all 0.2s;
+        }
+        .back-btn:hover {
+            color: var(--primary);
+            background: rgba(16, 185, 129, 0.1);
         }
         .header {
             text-align: center;
-            border-bottom: 2px solid #f1f5f9;
+            border-bottom: 2px solid var(--card-border);
             margin-bottom: 40px;
             padding-bottom: 20px;
         }
@@ -44,11 +80,11 @@
         h1 {
             font-size: 24px;
             font-weight: 800;
-            color: var(--secondary);
+            color: var(--title);
             margin: 0;
         }
         .college-info {
-            color: #64748b;
+            color: var(--subtext);
             font-size: 14px;
             font-weight: 600;
             text-transform: uppercase;
@@ -74,39 +110,46 @@
             gap: 20px;
         }
         .card {
-            background: #f8fafc;
+            background: rgba(16, 185, 129, 0.03);
             padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
         }
         .role {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800;
-            color: #64748b;
+            color: var(--subtext);
             text-transform: uppercase;
             margin-bottom: 5px;
+            letter-spacing: 0.5px;
         }
         .names {
             font-size: 16px;
             font-weight: 700;
-            color: var(--secondary);
+            color: var(--text);
         }
         .footer {
             margin-top: 50px;
             text-align: center;
             font-size: 12px;
-            color: #94a3b8;
-            border-top: 1px solid #f1f5f9;
+            color: var(--subtext);
+            border-top: 1px solid var(--card-border);
             padding-top: 20px;
         }
         @media print {
             body { padding: 0; background-color: white; }
             .container { box-shadow: none; max-width: 100%; border-radius: 0; }
+            .back-btn { display: none; }
+        }
+        @media (max-width: 640px) {
+            .grid { grid-template-columns: 1fr; }
+            .container { padding: 30px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <a href="/" class="back-btn">← Back to Dashboard</a>
         <div class="header">
             <div class="logo">PolyGuard AI</div>
             <h1>Project Technical Profile</h1>

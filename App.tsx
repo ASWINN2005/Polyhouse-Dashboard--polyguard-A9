@@ -1694,8 +1694,6 @@ const App: React.FC = () => {
           <div className="mt-8 pt-8 border-t border-gray-100 dark:border-slate-700 text-center">
             <a 
               href="/Team-A9-Details.html" 
-              target="_blank" 
-              rel="noopener noreferrer"
               className="font-bold text-gray-400 hover:text-emerald-500 transition-colors text-sm cursor-pointer"
             >
               Powered by Team A9

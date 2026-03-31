@@ -230,8 +230,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSignIn }) => {
                     <div className="pt-8 border-t border-gray-200 dark:border-slate-800/50 max-w-2xl mx-auto flex flex-col items-center gap-2 text-center">
                         <a 
                           href="/Team-A9-Details.html" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
                           className="font-bold text-gray-500 hover:text-emerald-500 transition-colors cursor-pointer"
                         >
                           Powered by Team A9
