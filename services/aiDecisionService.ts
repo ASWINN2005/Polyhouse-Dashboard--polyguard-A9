@@ -97,7 +97,8 @@ function detectIntentSmart(message: string): string | null {
 
   // 7. BRUTE FORCE KEYWORD CHECK (No boundary)
   if (clean.includes("softwar")) return "TEAM_QUERY";
-  if (clean.includes("hardwar")) return "TEAM_QUERY";
+  if (clean.includes("hardwar") && !clean.includes("test")) return "TEAM_QUERY";
+  if (clean.includes("test") || clean.includes("vamsi")) return "TESTING_QUERY";
 
   return null;
 }
@@ -166,6 +167,12 @@ const RESPONSE_BANK: Record<string, string[]> = {
   ],
   STATUS_FULL: [
     "📊 **Polyhouse Status**\n🌡️ Temp: {temp}°C | 💧 Soil: {soil}%\n⚡ Latency: {lat}"
+  ],
+  TESTING_TEAM: [
+    "The **Testing Team** consists of **H Umesh** and **M Vamsi**. They performed rigorous unit testing on the hardware and software.",
+    "Meet our project testers: **H Umesh** and **M Vamsi**. They ensured 100% reliability through exhaustive hardware and software stress testing.",
+    "**H Umesh** and **M Vamsi** are our lead testers. Every line of code and every sensor link was rigorously validated for PolyGuard's production launch.",
+    "The reliability of Polyhouse automation is thanks to **H Umesh** and **M Vamsi**. They conducted thorough unit testing on both the firmware and dashboard."
   ],
   UNKNOWN: [
     "🤖 I didn't quite catch that. Try 'Check Soil', 'Weather', or 'Turn on Pump'.",
@@ -407,6 +414,9 @@ export async function chatWithAgronomist(
       if (kb) return { text: kb };
       return { text: getRandomResponse("TEAM_QUERY") };
     }
+
+    case "TESTING_QUERY":
+      return { text: getRandomResponse("TESTING_TEAM") };
     
     case "GREETING": {
       const gText = GREETING_TEXTS[Math.floor(Math.random() * GREETING_TEXTS.length)];

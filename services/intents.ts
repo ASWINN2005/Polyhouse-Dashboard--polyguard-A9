@@ -439,6 +439,17 @@ export const INTENTS_EXTENDED = {
     "team details"
   ],
 
+  TESTING_QUERY: [
+    "testing team",
+    "who tested this",
+    "testing members",
+    "who did the testing",
+    "unit testing",
+    "rigorous testing",
+    "who is vamsi",
+    "vamsi"
+  ],
+
   // ===== PROJECT TECHNICAL & ACADEMIC =====
   PROJECT_TECH_QUERY: [
     "what sensors are used",

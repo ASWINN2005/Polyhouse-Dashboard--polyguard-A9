@@ -143,10 +143,6 @@ export const KNOWLEDGE_BASE = [
     answer: "The **Software Team** responsible for my AI engine and this dashboard consists of **K Aswin** and **K Adithya**."
   },
   {
-    keywords: ["testing team", "testing", "who tested this", "testing members"],
-    answer: "The **Testing Team** consists of **H Umesh** and **M Vamsi**. They performed rigorous unit testing on the ESP32 actuators, calibrated the SHT31/BH1750 sensors for 99% accuracy, and verified the UART-Firebase bridge for 24/7 uptime and zero-latency failover."
-  },
-  {
     keywords: ["hardware team", "hardware", "who made the hardware", "electronics team", "hardware members"],
     answer: "The **Hardware Team** (ESP32/NodeMCU/Sensors) consists of **H Umesh**, **K Aswin**, **K Adithya**, and **M Vamsi**."
   },
