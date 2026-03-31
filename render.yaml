@@ -1,6 +1,5 @@
-services:
-  - type: static
-    name: polyguard-dashboard
+staticSites:
+  - name: polyguard-dashboard
     buildCommand: npm run build
     staticPublishDir: dist
     envVars:
