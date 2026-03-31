@@ -3,7 +3,7 @@ services:
     name: polyguard-dashboard
     env: static
     buildCommand: npm run build
-    staticPublishDir: dist
+    publishDir: dist
     routes:
       - type: rewrite
         source: /*
