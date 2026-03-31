@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   X, User, Mail, Shield, Cpu, Clock, Leaf,
-  Edit2, Check, Camera, MapPin, Phone, Building2, Loader2, Download, Smartphone,
-  Users, GraduationCap, Award, BookOpen
+  Edit2, Check, Camera, MapPin, Phone, Building2, Loader2, Download, Smartphone
 } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -27,12 +26,9 @@ export const UserProfile: React.FC<Props> = ({
   const [editingName, setEditingName]   = useState(false);
   const [displayName, setDisplayName]   = useState('');
   const [organization, setOrganization] = useState('Polyhouse Farm');
-  const [college, setCollege]           = useState('Kuppam Engineering College');
-  const [branch, setBranch]             = useState('ECE - Team A9');
   const [phone, setPhone]               = useState('');
   const [location, setLocation]         = useState('');
   const [editingOrg, setEditingOrg]     = useState(false);
-  const [editingAcad, setEditingAcad]   = useState(false);
   const [savingName, setSavingName]     = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoURL, setPhotoURL]         = useState('');
@@ -345,77 +341,6 @@ export const UserProfile: React.FC<Props> = ({
                 Note: Offline caching is already active in your browser.
               </p>
             )}
-          </section>
-
-          {/* ── Our Team & College ── */}
-          <section className="bg-gradient-to-br from-slate-50 to-emerald-50 dark:from-slate-900/40 dark:to-emerald-900/10 rounded-3xl p-5 border border-emerald-100 dark:border-emerald-900/30">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Users size={18} className="text-emerald-600 dark:text-emerald-400" />
-                <h3 className="text-sm font-black uppercase tracking-widest text-emerald-800 dark:text-emerald-300">Our Team</h3>
-              </div>
-              <button 
-                onClick={() => setEditingAcad(!editingAcad)}
-                className="p-1.5 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-lg transition-colors"
-              >
-                {editingAcad ? <Check size={14} /> : <Edit2 size={14} />}
-              </button>
-            </div>
-
-            {/* Academic Info */}
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-3">
-                <Building2 size={16} className="text-emerald-500/60 shrink-0" />
-                {editingAcad ? (
-                  <input 
-                    value={college} 
-                    onChange={e => setCollege(e.target.value)}
-                    className="flex-1 text-sm bg-white dark:bg-slate-800 border border-emerald-200 rounded-lg px-2 py-1 outline-none dark:text-white"
-                  />
-                ) : (
-                  <p className="text-sm font-bold text-gray-700 dark:text-gray-200">{college}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-3">
-                <GraduationCap size={16} className="text-emerald-500/60 shrink-0" />
-                {editingAcad ? (
-                  <input 
-                    value={branch} 
-                    onChange={e => setBranch(e.target.value)}
-                    className="flex-1 text-sm bg-white dark:bg-slate-800 border border-emerald-200 rounded-lg px-2 py-1 outline-none dark:text-white"
-                  />
-                ) : (
-                  <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{branch}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Team Roles Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                { role: 'Project Heads', names: 'M Gopi Krishna & H Umesh', icon: <Award size={14}/>, color: 'from-orange-500 to-amber-500' },
-                { role: 'Team Guide', names: 'M Gopi Krishna sir', icon: <BookOpen size={14}/>, color: 'from-blue-500 to-indigo-500' },
-                { role: 'Software Team', names: 'K Aswin & K Adithya', icon: <Cpu size={14}/>, color: 'from-emerald-500 to-teal-500' },
-                { role: 'Testing Team', names: 'H Umesh & M Vamsi', icon: <Check size={14}/>, color: 'from-purple-500 to-pink-500' },
-              ].map((item) => (
-                <div key={item.role} className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl p-3 border border-white dark:border-slate-700 shadow-sm transition-all hover:shadow-md hover:scale-[1.02]">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className={`p-1.5 rounded-lg bg-gradient-to-br ${item.color} text-white`}>
-                      {item.icon}
-                    </div>
-                    <span className="text-[10px] font-black uppercase tracking-tighter text-gray-400">{item.role}</span>
-                  </div>
-                  <p className="text-xs font-bold text-gray-800 dark:text-gray-200 leading-tight">{item.names}</p>
-                </div>
-              ))}
-              <div className="sm:col-span-2 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-2xl p-3 border border-emerald-500/20">
-                <div className="flex items-center gap-2 mb-1">
-                  <Cpu size={14} className="text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-[10px] font-black uppercase tracking-tighter text-emerald-600 dark:text-emerald-400">Hardware Team</span>
-                </div>
-                <p className="text-xs font-bold text-gray-800 dark:text-gray-200">H Umesh, K Aswin, K Adithya, M Vamsi</p>
-              </div>
-            </div>
           </section>
 
           {/* ── Relay Map ── */}
