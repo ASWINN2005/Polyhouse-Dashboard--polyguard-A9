@@ -418,6 +418,8 @@ export const INTENTS_EXTENDED = {
   TEAM_QUERY: [
     "who are the founders",
     "who made you",
+    "who made u",
+    "who created u",
     "who is the team lead",
     "who is the project head",
     "who is the guide",

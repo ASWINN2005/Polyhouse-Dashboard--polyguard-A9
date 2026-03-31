@@ -131,7 +131,7 @@ export const KNOWLEDGE_BASE = [
   // IOT, TECHNOLOGY, & POLYGUARD HARDWARE OVERVIEW
   // -------------------------------------------------------------
   {
-    keywords: ["team a9", "who created you", "who made you", "creators", "developer", "author", "founders", "who are the founders", "team members"],
+    keywords: ["team a9", "who created you", "who made you", "who created u", "who made u", "creators", "developer", "author", "founders", "who are the founders", "team members"],
     answer: "I was developed by **Team A9** as a state-of-the-art IoT Smart Farming project. The founding members are **H Umesh**, **K Aswin**, **K Adithya**, and **M Vamsi**."
   },
   {
