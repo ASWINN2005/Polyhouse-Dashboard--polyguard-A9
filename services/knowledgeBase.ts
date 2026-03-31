@@ -139,15 +139,15 @@ export const KNOWLEDGE_BASE = [
     answer: "The **Heads of Project** for PolyGuard are **M Gopi Krishna** and **H Umesh**."
   },
   {
-    keywords: ["software team", "who wrote the code", "software developers", "software developers for this"],
+    keywords: ["software team", "software", "who wrote the code", "software developers", "software developers for this"],
     answer: "The **Software Team** responsible for my AI engine and this dashboard consists of **K Aswin** and **K Adithya**."
   },
   {
-    keywords: ["testing team", "who tested this", "testing members"],
+    keywords: ["testing team", "testing", "who tested this", "testing members"],
     answer: "The **Testing Team** ensuring system reliability consists of **H Umesh** and **M Vamsi**."
   },
   {
-    keywords: ["hardware team", "who made the hardware", "electronics team", "hardware members"],
+    keywords: ["hardware team", "hardware", "who made the hardware", "electronics team", "hardware members"],
     answer: "The **Hardware Team** (ESP32/NodeMCU/Sensors) consists of **H Umesh**, **K Aswin**, **K Adithya**, and **M Vamsi**."
   },
   {
