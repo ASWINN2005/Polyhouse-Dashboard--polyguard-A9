@@ -1,7 +1,7 @@
-staticSites:
+static_sites:
   - name: polyguard-dashboard
     buildCommand: npm run build
-    staticPublishDir: dist
+    publishDir: dist
     envVars:
       - key: NODE_VERSION
         value: "20"
