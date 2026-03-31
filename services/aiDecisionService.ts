@@ -102,6 +102,7 @@ function detectIntentSmart(message: string): string | null {
   if (clean.includes("guide") || clean.includes("gopi krishna sir") || clean.includes("motivator")) return "GUIDE_QUERY";
   if (clean.includes("lead") || clean.includes("project head") || (clean.includes("umesh") && !clean.includes("test"))) return "LEAD_QUERY";
   if (clean.includes("aec") || clean.includes("college") || clean.includes("kec")) return "ACADEMIC_QUERY";
+  if (clean.includes("god") || clean.includes("genius") || clean.includes("amazing")) return "PRAISE_QUERY";
 
   return null;
 }
@@ -167,6 +168,12 @@ const RESPONSE_BANK: Record<string, string[]> = {
     "Happy to help! Let me know if you need any more agronomy advice.",
     "My pleasure! Systems are standing by for your next command.",
     "I live to serve the Polyhouse! Thank you for the kind words."
+  ],
+  PRAISE_RESPONSE: [
+    "I am humbled! 🤖 But the real geniuses are **Team A9** (Umesh, Aswin, Adithya, and Vamsi) who engineered my neural logic from the ground up at **KEC**.",
+    "Thank you! However, all credit goes to **Team A9**. They are the engineering minds who brought PolyGuard to life at Kuppam Engineering College.",
+    "I live to serve the Polyhouse! But remember, I was built by the brilliant **Team A9** at KEC. They are the true creators of this system.",
+    "I appreciate it! But I'm just the interface. The brilliance belongs to **Team A9** (H Umesh, K Aswin, K Adithya, and M Vamsi)."
   ],
   STATUS_FULL: [
     "📊 **Polyhouse Status**\n🌡️ Temp: {temp}°C | 💧 Soil: {soil}%\n⚡ Latency: {lat}"
@@ -448,6 +455,8 @@ export async function chatWithAgronomist(
       return { text: getRandomResponse("GUIDE_TEAM") };
     case "LEAD_QUERY":
       return { text: getRandomResponse("LEAD_TEAM") };
+    case "PRAISE_QUERY":
+      return { text: getRandomResponse("PRAISE_RESPONSE") };
     
     case "GREETING": {
       const gText = GREETING_TEXTS[Math.floor(Math.random() * GREETING_TEXTS.length)];

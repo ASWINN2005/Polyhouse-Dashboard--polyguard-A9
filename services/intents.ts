@@ -487,6 +487,19 @@ export const INTENTS_EXTENDED = {
     "gopi krishna"
   ],
 
+  PRAISE_QUERY: [
+    "god",
+    "genius",
+    "amazing",
+    "you are the best",
+    "superb",
+    "brilliant",
+    "great job",
+    "excellent",
+    "wonderful",
+    "who is your god"
+  ],
+
   // ===== PROJECT TECHNICAL & ACADEMIC =====
   PROJECT_TECH_QUERY: [
     "what sensors are used",
