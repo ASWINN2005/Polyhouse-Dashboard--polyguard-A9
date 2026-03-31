@@ -166,6 +166,46 @@ export const KNOWLEDGE_BASE = [
     keywords: ["ai", "nlp", "artificial intelligence", "how are you so smart", "machine learning"],
     answer: "**The PolyGuard AI Engine:** I utilize a localized NLP (Natural Language Processing) deterministic intent parser paired with an extensive hardcoded agricultural knowledge base to resolve commands in under 10ms without cloud GPU latency."
   },
+  {
+    keywords: ["college", "kec", "kuppam engineering college", "where is your college", "college name"],
+    answer: "PolyGuard was developed at **Kuppam Engineering College (KEC)**, located in Kuppam, Chittoor District, Andhra Pradesh. KEC is a premier institution known for fostering IoT and Smart Agriculture innovation."
+  },
+  {
+    keywords: ["branch", "department", "ece", "electronics and communication", "major"],
+    answer: "This project is the brainchild of the **Electronics and Communication Engineering (ECE)** department. We applied core principles of embedded systems, signal processing, and networking to build this automated dashboard."
+  },
+  {
+    keywords: ["sensor", "sensors", "hardware list", "what sensors are used", "device list"],
+    answer: "PolyGuard utilizes a professional sensor suite: **SHT31/DHT22** (Temp/Humidity), **BH1750** (Digital Lux), **Capacitive Soil Moisture Sensor v1.2** (Corrosion-resistant), and **Ultrasonic Sensors** (Safety limits)."
+  },
+  {
+    keywords: ["esp32", "esp-32", "actuator brain", "wroom", "controller"],
+    answer: "The **ESP32** serves as the 'Actuator Brain'. It handles high-speed PWM for fans, relay switching for pumps, and reads the ultrasonic safety limits. It is chosen for its dual-core processing and robust I/O."
+  },
+  {
+    keywords: ["nodemcu", "esp8266", "master bridge", "wifi module", "iot chip"],
+    answer: "The **NodeMCU (ESP8266)** acts as the 'Master Bridge'. It manages the Wi-Fi uplink, handles Firebase Real-time Database synchronization, and communicates with the ESP32 via a Serial UART bridge."
+  },
+  {
+    keywords: ["uart", "serial", "bridge", "how do boards communicate", "tx rx"],
+    answer: "The NodeMCU and ESP32 are linked via a **UART Serial Bridge** (9600 Baud). This 2-wire communication ensures that sensor data from the master reaches the actuator brain instantly and reliably."
+  },
+  {
+    keywords: ["firebase", "backend", "database", "cloud", "where is data stored"],
+    answer: "PolyGuard uses **Google Firebase**. Real-time telemetry is synced to the **Real-time Database**, while user settings and AI logs are stored in **Firestore** with offline persistence enabled."
+  },
+  {
+    keywords: ["ipm", "pest management", "integrated pest management", "organic pest control"],
+    answer: "**Integrated Pest Management (IPM):** A sustainable approach combining biological, cultural, and chemical tools. PolyGuard assists IPM by maintaining humidity below fungal thresholds and monitoring for stressors that attract insects."
+  },
+  {
+    keywords: ["hydroponics nft", "hydroponics dwc", "nutrient film technique", "deep water culture"],
+    answer: "**Hydroponic Systems:** PolyGuard is compatible with **NFT (Nutrient Film Technique)** where a thin film of water flows over roots, and **DWC (Deep Water Culture)** where roots are submerged in aerated nutrient solution."
+  },
+  {
+    keywords: ["vapor pressure deficit", "vpd", "ideal vpd"],
+    answer: "**VPD (Vapor Pressure Deficit):** The difference between the moisture in the air and how much moisture the air can hold when saturated. An ideal VPD for most crops is **0.8 to 1.2 kPa**. It determines how effectively plants can 'breathe'."
+  },
 
   // -------------------------------------------------------------
   // GENERAL KNOWLEDGE & TRIVIA

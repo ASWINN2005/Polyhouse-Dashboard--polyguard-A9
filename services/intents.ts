@@ -436,6 +436,39 @@ export const INTENTS_EXTENDED = {
     "team details"
   ],
 
+  // ===== PROJECT TECHNICAL & ACADEMIC =====
+  PROJECT_TECH_QUERY: [
+    "what sensors are used",
+    "hardware list",
+    "esp32",
+    "nodemcu",
+    "uart bridge",
+    "firebase backend",
+    "how do boards communicate",
+    "where is data stored",
+    "device list"
+  ],
+
+  ACADEMIC_QUERY: [
+    "college name",
+    "where is your college",
+    "which branch",
+    "department",
+    "ece",
+    "kec",
+    "kuppam engineering college"
+  ],
+
+  AGRONOMY_ADVANCED: [
+    "what is ipm",
+    "integrated pest management",
+    "hydroponic nft",
+    "deep water culture",
+    "vapor pressure deficit",
+    "vpd",
+    "ideal vpd"
+  ],
+
   // ===== SYSTEM CONFIDENCE & TRUST =====
 
 };
