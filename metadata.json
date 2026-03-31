@@ -1,7 +1,0 @@
-{
-  "name": "PolyGuard - Smart PolyHouse Monitoring and Control System",
-  "description": "An IoT dashboard for monitoring and automating polyhouse environments with AI-driven insights.",
-  "requestFramePermissions": [
-    "geolocation"
-  ]
-}

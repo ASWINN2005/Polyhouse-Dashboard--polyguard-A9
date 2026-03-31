@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: polyguard-dashboard
+    runtime: static
+    buildCommand: npm run build
+    staticPublishDir: dist
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

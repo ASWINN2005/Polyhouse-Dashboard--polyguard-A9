@@ -9,35 +9,39 @@ export class ESP8266Service {
   }
 
   // ---------- TELEMETRY ----------
+  // Fetches from the root "/" endpoint served by the ESP8266 firmware.
+  // The firmware JSON fields are: temperature, humidity, light_lux, soil_moisture
   async fetchSensorData(): Promise<SensorData | null> {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3000);
+      const timeout = setTimeout(() => controller.abort(), 10000);
 
       const res = await fetch(
-        `http://${this.ipAddress}/telemetry`,
-        { signal: controller.signal }
+        `http://${this.ipAddress}/`,
+        { signal: controller.signal, mode: 'cors' }
       );
 
       clearTimeout(timeout);
-      if (!res.ok) throw new Error('Telemetry failed');
+      if (!res.ok) throw new Error('Fetch failed with status: ' + res.status);
 
       const raw = await res.json();
 
       return {
-        timestamp: new Date(raw.ts * 1000).toLocaleTimeString(),
-        temperature: raw.t ?? 0,
-        humidity: raw.h ?? 0,
-        soilMoisture: raw.sm ?? 0,
-        lightIntensity: raw.lux ?? 0,
-        soilPH: raw.ph ?? 0,
-        co2: raw.co2 ?? 0,
-        nitrogen: raw.n ?? 0,
-        phosphorus: raw.p ?? 0,
-        potassium: raw.k ?? 0
+        // Firmware doesn't provide a timestamp — use current time
+        timestamp: new Date().toLocaleTimeString(),
+        temperature: raw.temperature ?? 0,
+        humidity: raw.humidity ?? 0,
+        soilMoisture: raw.soil_moisture ?? 0,
+        lightIntensity: raw.light_lux ?? 0,
+        // Firmware doesn't have these sensors — default to 0
+        soilPH: 0,
+        co2: 0,
+        nitrogen: 0,
+        phosphorus: 0,
+        potassium: 0
       };
     } catch (e) {
-      console.error('ESP8266 Telemetry Error:', e);
+      console.error('ESP8266 Fetch Error:', e);
       return null;
     }
   }
@@ -67,7 +71,7 @@ export class ESP8266Service {
       });
 
       if (!res.ok) throw new Error('Control failed');
-      return await res.json(); // authoritative truth
+      return await res.json();
     } catch (e) {
       console.error('ESP8266 Control Error:', e);
       return null;
