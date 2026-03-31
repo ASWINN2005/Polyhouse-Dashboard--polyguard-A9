@@ -160,7 +160,7 @@ export const KNOWLEDGE_BASE = [
   },
   {
     keywords: ["sensor", "sensors", "hardware list", "what sensors are used", "device list"],
-    answer: "PolyGuard utilizes a professional sensor suite: **SHT31/DHT22** (Temp/Humidity), **BH1750** (Digital Lux), **Capacitive Soil Moisture Sensor v1.2** (Corrosion-resistant), and **Ultrasonic Sensors** (Safety limits)."
+    answer: "PolyGuard utilizes a professional sensor suite: **SHT31** (Temp/Humidity), **BH1750** (Digital Lux), **Capacitive Soil Moisture Sensor v2.0** (Corrosion-resistant), and **Ultrasonic Sensors** (Safety limits)."
   },
   {
     keywords: ["esp32", "esp-32", "actuator brain", "wroom", "controller"],

@@ -228,7 +228,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSignIn }) => {
                     </div>
                     
                     <div className="pt-8 border-t border-gray-200 dark:border-slate-800/50 max-w-2xl mx-auto flex flex-col items-center gap-2 text-center">
-                        <p className="font-bold text-gray-500 dark:text-gray-400">Powered by Team A9</p>
+                        <a 
+                          href="/Team-A9-Details.html" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="font-bold text-gray-500 hover:text-emerald-500 transition-colors cursor-pointer"
+                        >
+                          Powered by Team A9
+                        </a>
                         <p className="text-sm text-gray-400 dark:text-gray-600 font-medium">© 2026 PolyGuard IoT Core. All rights reserved.</p>
                     </div>
                 </div>

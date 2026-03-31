@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team A9 - PolyGuard Project Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --secondary: #064e3b;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 60px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-radius: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--secondary);
+            margin: 0;
+        }
+        .college-info {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .role {
+            font-size: 12px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .names {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 20px;
+        }
+        @media print {
+            body { padding: 0; background-color: white; }
+            .container { box-shadow: none; max-width: 100%; border-radius: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">PolyGuard AI</div>
+            <h1>Project Technical Profile</h1>
+            <div class="college-info">Kuppam Engineering College | ECE Department</div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Leadership & Guidance</div>
+            <div class="grid">
+                <div class="card">
+                    <div class="role">Project Heads</div>
+                    <div class="names">M Gopi Krishna & H Umesh</div>
+                </div>
+                <div class="card">
+                    <div class="role">Project Guide & Motivator</div>
+                    <div class="names">M Gopi Krishna sir</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Development Teams</div>
+            <div class="grid">
+                <div class="card">
+                    <div class="role">Software Team</div>
+                    <div class="names">K Aswin & K Adithya</div>
+                </div>
+                <div class="card">
+                    <div class="role">Testing Team</div>
+                    <div class="names">H Umesh & M Vamsi</div>
+                </div>
+                <div class="card" style="grid-column: span 2;">
+                    <div class="role">Hardware Team</div>
+                    <div class="names">H Umesh, K Aswin, K Adithya, M Vamsi</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Project Vision</div>
+            <p>PolyGuard is an advanced IoT-based Smart Greenhouse management system designed to empower farmers with real-time telemetry and 24/7 autonomous micro-climate control. Developed as a final year engineering milestone, it integrates Firebase Real-time Database, ESP32 processing, and a professional-grade React dashboard to bridge the gap between traditional farming and precision agriculture.</p>
+        </div>
+
+        <div class="footer">
+            &copy; 2026 Team A9 - Kuppam Engineering College. All technical rights reserved.
+        </div>
+    </div>
+</body>
+</html>

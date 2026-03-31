@@ -1690,9 +1690,18 @@ const App: React.FC = () => {
 
       {/* --- DASHBOARD FOOTER --- */}
       <footer className="border-t border-gray-200 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center gap-2 text-center">
-          <p className="font-bold text-gray-500 dark:text-gray-400 text-sm">Powered by Team A9</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">© 2026 PolyGuard IoT Core. All rights reserved.</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mt-8 pt-8 border-t border-gray-100 dark:border-slate-700 text-center">
+            <a 
+              href="/Team-A9-Details.html" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-bold text-gray-400 hover:text-emerald-500 transition-colors text-sm cursor-pointer"
+            >
+              Powered by Team A9
+            </a>
+          </div>
+          <p className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-4">© 2026 PolyGuard IoT Core. All rights reserved.</p>
         </div>
       </footer>
     </div>
