@@ -450,6 +450,43 @@ export const INTENTS_EXTENDED = {
     "vamsi"
   ],
 
+  SOFTWARE_QUERY: [
+    "software team",
+    "software",
+    "who wrote the code",
+    "software developers",
+    "aswin",
+    "adithya"
+  ],
+
+  HARDWARE_QUERY: [
+    "hardware team",
+    "hardware",
+    "electronics",
+    "how do boards communicate",
+    "esp32",
+    "nodemcu",
+    "uart bridge"
+  ],
+
+  GUIDE_QUERY: [
+    "guide",
+    "motivator",
+    "mentor",
+    "who is the guide",
+    "gopi krishna sir",
+    "gopi krishna"
+  ],
+
+  LEAD_QUERY: [
+    "team lead",
+    "project head",
+    "who is the leader",
+    "who is the head",
+    "umesh",
+    "gopi krishna"
+  ],
+
   // ===== PROJECT TECHNICAL & ACADEMIC =====
   PROJECT_TECH_QUERY: [
     "what sensors are used",

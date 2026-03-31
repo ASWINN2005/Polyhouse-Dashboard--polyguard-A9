@@ -95,10 +95,13 @@ function detectIntentSmart(message: string): string | null {
     if (isFuzzyMatch(word, "humidity")) return "HUMIDITY_QUERY";
   }
 
-  // 7. BRUTE FORCE KEYWORD CHECK (No boundary)
-  if (clean.includes("softwar")) return "TEAM_QUERY";
-  if (clean.includes("hardwar") && !clean.includes("test")) return "TEAM_QUERY";
+  // 7. BRUTAL KEYWORD CHECK
+  if (clean.includes("softwar")) return "SOFTWARE_QUERY";
+  if (clean.includes("hardwar") && !clean.includes("test")) return "HARDWARE_QUERY";
   if (clean.includes("test") || clean.includes("vamsi")) return "TESTING_QUERY";
+  if (clean.includes("guide") || clean.includes("gopi krishna sir") || clean.includes("motivator")) return "GUIDE_QUERY";
+  if (clean.includes("lead") || clean.includes("project head") || (clean.includes("umesh") && !clean.includes("test"))) return "LEAD_QUERY";
+  if (clean.includes("aec") || clean.includes("college") || clean.includes("kec")) return "ACADEMIC_QUERY";
 
   return null;
 }
@@ -173,6 +176,26 @@ const RESPONSE_BANK: Record<string, string[]> = {
     "Meet our project testers: **H Umesh** and **M Vamsi**. They ensured 100% reliability through exhaustive hardware and software stress testing.",
     "**H Umesh** and **M Vamsi** are our lead testers. Every line of code and every sensor link was rigorously validated for PolyGuard's production launch.",
     "The reliability of Polyhouse automation is thanks to **H Umesh** and **M Vamsi**. They conducted thorough unit testing on both the firmware and dashboard."
+  ],
+  SOFTWARE_TEAM: [
+    "The software is powered by **K Aswin** and **K Adithya**. They built the AI engine, Firebase real-time bridge, and this beautiful React dashboard.",
+    "**K Aswin** and **K Adithya** lead our software development. They ensured the dashboard is 100% responsive and PWA-enabled for offline use.",
+    "Meet the developers: **K Aswin** and **K Adithya**. They handled everything from the frontend UI to the backend AI logic."
+  ],
+  HARDWARE_TEAM: [
+    "The hardware architecture (ESP32/NodeMCU) was designed by **H Umesh**, **K Aswin**, **K Adithya**, and **M Vamsi**.",
+    "Our electronics experts are **H Umesh**, **K Aswin**, **K Adithya**, and **M Vamsi**. They built the UART bridge and fine-tuned all the sensors.",
+    "From sensor calibration to PCB wiring, **H Umesh**, **K Aswin**, **K Adithya**, and **M Vamsi** are the hands behind the PolyGuard hardware."
+  ],
+  GUIDE_TEAM: [
+    "Our project's **Motivator and Team Guide** is **M Gopi Krishna sir**. His mentorship was instrumental in our success.",
+    "We are guided and motivated by **M Gopi Krishna sir**, who provided the technical and academic vision for PolyGuard.",
+    "Our mentor, **M Gopi Krishna sir**, is the driving force behind the project's innovation and excellence."
+  ],
+  LEAD_TEAM: [
+    "The **Project Heads** for PolyGuard are **M Gopi Krishna** and **H Umesh**.",
+    "Leading the way are **M Gopi Krishna** and **H Umesh**, our dedicated Project Heads.",
+    "Project leadership is provided by **M Gopi Krishna** and **H Umesh**, ensuring all goals were met with excellence."
   ],
   UNKNOWN: [
     "🤖 I didn't quite catch that. Try 'Check Soil', 'Weather', or 'Turn on Pump'.",
@@ -417,6 +440,14 @@ export async function chatWithAgronomist(
 
     case "TESTING_QUERY":
       return { text: getRandomResponse("TESTING_TEAM") };
+    case "SOFTWARE_QUERY":
+      return { text: getRandomResponse("SOFTWARE_TEAM") };
+    case "HARDWARE_QUERY":
+      return { text: getRandomResponse("HARDWARE_TEAM") };
+    case "GUIDE_QUERY":
+      return { text: getRandomResponse("GUIDE_TEAM") };
+    case "LEAD_QUERY":
+      return { text: getRandomResponse("LEAD_TEAM") };
     
     case "GREETING": {
       const gText = GREETING_TEXTS[Math.floor(Math.random() * GREETING_TEXTS.length)];

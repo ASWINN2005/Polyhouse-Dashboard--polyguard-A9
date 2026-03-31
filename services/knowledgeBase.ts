@@ -139,18 +139,6 @@ export const KNOWLEDGE_BASE = [
     answer: "The **Heads of Project** for PolyGuard are **M Gopi Krishna** and **H Umesh**."
   },
   {
-    keywords: ["software team", "software", "who wrote the code", "software developers", "software developers for this"],
-    answer: "The **Software Team** responsible for my AI engine and this dashboard consists of **K Aswin** and **K Adithya**."
-  },
-  {
-    keywords: ["hardware team", "hardware", "who made the hardware", "electronics team", "hardware members"],
-    answer: "The **Hardware Team** (ESP32/NodeMCU/Sensors) consists of **H Umesh**, **K Aswin**, **K Adithya**, and **M Vamsi**."
-  },
-  {
-    keywords: ["motivator", "guide", "team guide", "mentor", "who is the guide", "gopi krishna"],
-    answer: "Our project **Motivator and Team Guide** is **M Gopi Krishna sir**."
-  },
-  {
     keywords: ["iot", "internet of things", "how it works", "architecture", "microcontroller", "esp32", "nodemcu"],
     answer: "**IoT Architecture:** The environment uses an ESP32 (Actuator Brain) and NodeMCU (Master Bridge). They communicate locally. Real-time data is synced over Wi-Fi/Firebase to this dashboard seamlessly."
   },
