@@ -131,12 +131,28 @@ export const KNOWLEDGE_BASE = [
   // IOT, TECHNOLOGY, & POLYGUARD HARDWARE OVERVIEW
   // -------------------------------------------------------------
   {
-    keywords: ["polyguard", "what is polyguard", "who are you", "what can you do"],
-    answer: "**I am PolyGuard**, a localized AI Agronomist engine. I interface with an ESP32 and NodeMCU via UART bridging to autonomously control actuators, enforce thermal limiters, sync real-time database telemetry to Firebase, and advise on crop science."
+    keywords: ["team a9", "who created you", "who made you", "creators", "developer", "author", "founders", "who are the founders", "team members"],
+    answer: "I was developed by **Team A9** as a state-of-the-art IoT Smart Farming project. The founding members are **H Umesh**, **K Aswin**, **K Adithya**, and **M Vamsi**."
   },
   {
-    keywords: ["team a9", "who created you", "who made you", "creators", "developer", "author"],
-    answer: "I was architected and developed by **Team A9** as a state-of-the-art IoT Smart Farming and Polyhouse Automation Capstone Project. My deterministic NLP engine runs entirely locally in your browser!"
+    keywords: ["team lead", "project head", "who is the leader", "head of this project", "who is the head"],
+    answer: "The **Heads of Project** for PolyGuard are **M Gopi Krishna** and **H Umesh**."
+  },
+  {
+    keywords: ["software team", "who wrote the code", "software developers", "software developers for this"],
+    answer: "The **Software Team** responsible for my AI engine and this dashboard consists of **K Aswin** and **K Adithya**."
+  },
+  {
+    keywords: ["testing team", "who tested this", "testing members"],
+    answer: "The **Testing Team** ensuring system reliability consists of **H Umesh** and **M Vamsi**."
+  },
+  {
+    keywords: ["hardware team", "who made the hardware", "electronics team", "hardware members"],
+    answer: "The **Hardware Team** (ESP32/NodeMCU/Sensors) consists of **H Umesh**, **K Aswin**, **K Adithya**, and **M Vamsi**."
+  },
+  {
+    keywords: ["motivator", "guide", "team guide", "mentor", "who is the guide", "gopi krishna"],
+    answer: "Our project **Motivator and Team Guide** is **M Gopi Krishna sir**."
   },
   {
     keywords: ["iot", "internet of things", "how it works", "architecture", "microcontroller", "esp32", "nodemcu"],

@@ -147,6 +147,10 @@ const RESPONSE_BANK: Record<string, string[]> = {
   DATE_CHECK: ["📅 Today is {day}, {date}."],
   
   LATENCY: ["⚡ System Latency: {val}. Connection Excellent."],
+  TEAM_QUERY: [
+    "I was developed by **Team A9**. The founding members are **H Umesh**, **K Aswin**, **K Adithya**, and **M Vamsi**. The Project Heads are **M Gopi Krishna** and **H Umesh**.",
+    "The PolyGuard team consists of M Gopi Krishna & H Umesh (Project Heads), Aswin & Adithya (Software), and Vamsi (Testing). Our mentor is M Gopi Krishna sir."
+  ],
   STATUS_FULL: [
     "📊 **Polyhouse Status**\n🌡️ Temp: {temp}°C | 💧 Soil: {soil}%\n⚡ Latency: {lat}"
   ]
@@ -380,6 +384,11 @@ export async function chatWithAgronomist(
     case "TIME_QUERY": return { text: getRandomResponse("TIME_CHECK", { time: system.time }) };
     case "DATE_QUERY": return { text: getRandomResponse("DATE_CHECK", { date: system.date, day: system.day }) };
     case "LATENCY_QUERY": return { text: getRandomResponse("LATENCY", { val: system.latency }) };
+    case "TEAM_QUERY": {
+      const kb = searchKnowledgeBase(cleanMsg);
+      if (kb) return { text: kb };
+      return { text: getRandomResponse("TEAM_QUERY") };
+    }
     
     case "GREETING": {
       const gText = GREETING_TEXTS[Math.floor(Math.random() * GREETING_TEXTS.length)];

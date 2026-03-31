@@ -414,13 +414,27 @@ export const INTENTS_EXTENDED = {
     "hydration trend check"
   ],
 
+  // ===== PROJECT INFO & TEAM =====
+  TEAM_QUERY: [
+    "who are the founders",
+    "who made you",
+    "who is the team lead",
+    "who is the project head",
+    "who is the guide",
+    "who is the motivator",
+    "software team",
+    "hardware team",
+    "testing team",
+    "who is gopi krishna",
+    "who is umesh",
+    "who is aswin",
+    "who is adithya",
+    "who is vamsi",
+    "project members",
+    "team details"
+  ],
+
   // ===== SYSTEM CONFIDENCE & TRUST =====
-  AI_CONFIDENCE: [
-    "how confident is ai",
-    "ai decision confidence",
-    "is system sure",
-    "confidence level of action"
-  ]
 
 };
 export const PRIORITY_INTENTS = [
