@@ -106,12 +106,6 @@ function detectIntentSmart(message: string): string | null {
 // 💬 RESPONSE BANK
 // ============================================================================
 const RESPONSE_BANK: Record<string, string[]> = {
-  UNKNOWN: [
-    "I didn't quite catch that. Try 'Check Soil', 'Weather', or 'Turn on Pump'.",
-    "System uncertain. You can ask about Sensors, Actuators, or Weather.",
-    "Command not recognized."
-  ],
-
   // --- SMALL TALK ---
   SMALL_TALK_ACK: ["I'm listening.", "Standing by.", "Systems active.", "Go ahead."],
   SMALL_TALK_POS: ["👍", "Understood.", "Copy that.", "Glad to hear."],
@@ -162,10 +156,21 @@ const RESPONSE_BANK: Record<string, string[]> = {
   LATENCY: ["⚡ System Latency: {val}. Connection Excellent."],
   TEAM_QUERY: [
     "I was developed by **Team A9**. The founding members are **H Umesh**, **K Aswin**, **K Adithya**, and **M Vamsi**. The Project Heads are **M Gopi Krishna** and **H Umesh**.",
-    "The PolyGuard team consists of M Gopi Krishna & H Umesh (Project Heads), Aswin & Adithya (Software), and Vamsi (Testing). Our mentor is M Gopi Krishna sir."
+    "The PolyGuard team consists of M Gopi Krishna & H Umesh (Project Heads), Aswin & Adithya (Software), and Umesh & Vamsi (Testing). Our mentor is M Gopi Krishna sir."
+  ],
+  THANKS: [
+    "You are very welcome! I am always analyzing your polyhouse data.",
+    "Happy to help! Let me know if you need any more agronomy advice.",
+    "My pleasure! Systems are standing by for your next command.",
+    "I live to serve the Polyhouse! Thank you for the kind words."
   ],
   STATUS_FULL: [
     "📊 **Polyhouse Status**\n🌡️ Temp: {temp}°C | 💧 Soil: {soil}%\n⚡ Latency: {lat}"
+  ],
+  UNKNOWN: [
+    "🤖 I didn't quite catch that. Try 'Check Soil', 'Weather', or 'Turn on Pump'.",
+    "Hmm, I don't have that in my database yet. Want to talk about tomatoes or irrigation?",
+    "I'm still learning! Try asking about photosythensis, NPK, or the team."
   ]
 };
 
