@@ -144,7 +144,7 @@ export const KNOWLEDGE_BASE = [
   },
   {
     keywords: ["testing team", "testing", "who tested this", "testing members"],
-    answer: "The **Testing Team** ensuring system reliability consists of **H Umesh** and **M Vamsi**."
+    answer: "The **Testing Team** consists of **H Umesh** and **M Vamsi**. They performed rigorous unit testing on the ESP32 actuators, calibrated the SHT31/BH1750 sensors for 99% accuracy, and verified the UART-Firebase bridge for 24/7 uptime and zero-latency failover."
   },
   {
     keywords: ["hardware team", "hardware", "who made the hardware", "electronics team", "hardware members"],
