@@ -119,6 +119,24 @@ export function subscribeToSettings(
   return () => off(settingsRef, 'value', handler);
 }
 
+export function subscribeToDeviceStatus(
+  chipId: string,
+  callback: (status: { online: boolean; lastSeen: number; ip: string }) => void
+): () => void {
+  const statusRef = ref(rtdb, `devices/${chipId}/status`);
+  const handler = (snapshot: any) => {
+    if (!snapshot.exists()) return;
+    const s = snapshot.val();
+    callback({
+      online: s.online ?? false,
+      lastSeen: s.lastSeen ?? 0,
+      ip: s.ip ?? ''
+    });
+  };
+  onValue(statusRef, handler);
+  return () => off(statusRef, 'value', handler);
+}
+
 // ────────────────────────────────────────────────────────────────
 // RTDB — Device Discovery  (/devices/)
 // ESP8266 registers itself here; dashboard reads for auto-discovery

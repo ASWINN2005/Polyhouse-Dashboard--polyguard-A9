@@ -11,16 +11,12 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   user: import('firebase/auth').User | null;
-  isLiveMode: boolean;
-  espIp: string;
-  dataPointsCollected: number;
-  sessionStart: Date;
   installPromptAvailable: boolean;
   onInstallApp: () => void;
 }
 
 export const UserProfile: React.FC<Props> = ({
-  isOpen, onClose, user, isLiveMode, espIp, dataPointsCollected, sessionStart,
+  isOpen, onClose, user,
   installPromptAvailable, onInstallApp
 }) => {
   const [editingName, setEditingName]   = useState(false);
@@ -101,12 +97,6 @@ export const UserProfile: React.FC<Props> = ({
         { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     : 'Unknown';
 
-  const sessionDuration = () => {
-    const ms = Date.now() - sessionStart.getTime();
-    const h  = Math.floor(ms / 3600000);
-    const m  = Math.floor((ms % 3600000) / 60000);
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
-  };
 
   const initials = (user.displayName || user.email || 'U')
     .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -265,8 +255,6 @@ export const UserProfile: React.FC<Props> = ({
               {[
                 { label: 'Member Since',  value: joined,                        icon: <User size={14} /> },
                 { label: 'Last Login',    value: lastLogin,                     icon: <Clock size={14} /> },
-                { label: 'User ID',       value: user.uid.slice(0, 12) + '...', icon: <Shield size={14} /> },
-                { label: 'Auth Provider', value: 'Google',                      icon: <Mail size={14} /> },
               ].map(item => (
                 <div key={item.label} className="bg-gray-50 dark:bg-slate-900/50 rounded-xl p-3">
                   <div className="flex items-center gap-1.5 text-gray-400 mb-1">
@@ -279,38 +267,6 @@ export const UserProfile: React.FC<Props> = ({
             </div>
           </section>
 
-          {/* ── Session Stats ── */}
-          <section>
-            <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Current Session</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { label: 'Duration',    value: sessionDuration(),                         color: 'emerald' },
-                { label: 'Data Points', value: dataPointsCollected.toLocaleString(),      color: 'blue'    },
-                { label: 'Mode',        value: isLiveMode ? 'Live' : 'Demo',              color: isLiveMode ? 'emerald' : 'gray' },
-              ].map(stat => (
-                <div key={stat.label} className={`rounded-xl p-3 text-center ${
-                  stat.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-900/20' :
-                  stat.color === 'blue'    ? 'bg-blue-50 dark:bg-blue-900/20' :
-                                             'bg-gray-50 dark:bg-slate-900/50'}`}>
-                  <p className={`text-lg font-black ${
-                    stat.color === 'emerald' ? 'text-emerald-700 dark:text-emerald-400' :
-                    stat.color === 'blue'    ? 'text-blue-700 dark:text-blue-400' :
-                                               'text-gray-600 dark:text-gray-400'}`}>{stat.value}</p>
-                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-            {isLiveMode && (
-              <div className="mt-2 flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-3">
-                <Cpu size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">ESP8266 Connected</p>
-                  <p className="text-[11px] text-emerald-600/70 font-mono">{espIp}</p>
-                </div>
-                <div className="ml-auto w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              </div>
-            )}
-          </section>
           
           {/* ── App Installation ── */}
           <section>
@@ -343,26 +299,6 @@ export const UserProfile: React.FC<Props> = ({
             )}
           </section>
 
-          {/* ── Relay Map ── */}
-          <section>
-            <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Hardware Map</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { icon: '💧', label: 'Water Pump',  desc: 'D5 (GPIO14)' },
-                { icon: '💨', label: 'Ventilation', desc: 'D6 (GPIO12)' },
-                { icon: '💡', label: 'Grow Lights', desc: 'D7 (GPIO13)' },
-                { icon: '🌿', label: 'Shade Net',   desc: 'D8 (GPIO15)' },
-              ].map(item => (
-                <div key={item.label} className="flex items-center gap-2 bg-gray-50 dark:bg-slate-900/50 rounded-xl p-3">
-                  <span className="text-lg">{item.icon}</span>
-                  <div>
-                    <p className="text-xs font-bold text-gray-700 dark:text-gray-300">{item.label}</p>
-                    <p className="text-[10px] text-gray-400 font-mono">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
         </div>
 
         {/* ── Footer ── */}
@@ -370,8 +306,8 @@ export const UserProfile: React.FC<Props> = ({
           <div className="flex items-center justify-between text-xs text-gray-400">
             <div className="flex items-center gap-1.5">
               <Leaf size={12} className="text-emerald-500" />
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">PolyGuard</span>
-              <span>— Smart Polyhouse Control</span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">PolyGuard IoT Core</span>
+              <span>— Automated Smart Polyhouse</span>
             </div>
             <span>v1.0.0</span>
           </div>

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team A9 - PolyGuard Project Profile</title>
+    <title>Team A9 - Automated Smart Polyhouse Profile</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -16,16 +17,17 @@
             --subtext: #64748b;
             --title: #064e3b;
         }
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #0f172a;
-                --card-bg: #1e293b;
-                --card-border: #334155;
-                --text: #f1f5f9;
-                --subtext: #94a3b8;
-                --title: #10b981;
-            }
+
+        /* Manual dark mode class to match dashboard setting */
+        .dark {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text: #f1f5f9;
+            --subtext: #94a3b8;
+            --title: #10b981;
         }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg);
@@ -35,15 +37,17 @@
             line-height: 1.6;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
+
         .container {
             max-width: 800px;
             margin: 0 auto;
             background: var(--card-bg);
             padding: 60px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             border-radius: 24px;
             position: relative;
         }
+
         .back-btn {
             position: absolute;
             top: 20px;
@@ -60,16 +64,19 @@
             border-radius: 20px;
             transition: all 0.2s;
         }
+
         .back-btn:hover {
             color: var(--primary);
             background: rgba(16, 185, 129, 0.1);
         }
+
         .header {
             text-align: center;
             border-bottom: 2px solid var(--card-border);
             margin-bottom: 40px;
             padding-bottom: 20px;
         }
+
         .logo {
             font-size: 32px;
             font-weight: 800;
@@ -77,12 +84,14 @@
             letter-spacing: -1px;
             margin-bottom: 10px;
         }
+
         h1 {
             font-size: 24px;
             font-weight: 800;
             color: var(--title);
             margin: 0;
         }
+
         .college-info {
             color: var(--subtext);
             font-size: 14px;
@@ -91,9 +100,11 @@
             letter-spacing: 1px;
             margin-top: 5px;
         }
+
         .section {
             margin-bottom: 30px;
         }
+
         .section-title {
             font-size: 18px;
             font-weight: 700;
@@ -104,17 +115,20 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
+
         .card {
             background: rgba(16, 185, 129, 0.03);
             padding: 20px;
             border-radius: 16px;
             border: 1px solid var(--card-border);
         }
+
         .role {
             font-size: 11px;
             font-weight: 800;
@@ -123,11 +137,13 @@
             margin-bottom: 5px;
             letter-spacing: 0.5px;
         }
+
         .names {
             font-size: 16px;
             font-weight: 700;
             color: var(--text);
         }
+
         .footer {
             margin-top: 50px;
             text-align: center;
@@ -136,66 +152,201 @@
             border-top: 1px solid var(--card-border);
             padding-top: 20px;
         }
+
         @media print {
-            body { padding: 0; background-color: white; }
-            .container { box-shadow: none; max-width: 100%; border-radius: 0; }
-            .back-btn { display: none; }
+            body {
+                padding: 0;
+                background-color: white;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+                border-radius: 0;
+            }
+
+            .back-btn {
+                display: none;
+            }
         }
+
+        .leaf-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .leaf {
+            position: absolute;
+            top: -50px;
+            color: var(--primary);
+            opacity: 0;
+            font-size: 20px;
+            animation: fall linear infinite, sway ease-in-out infinite;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
+            will-change: transform, opacity;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.4;
+            }
+
+            90% {
+                opacity: 0.4;
+            }
+
+            100% {
+                transform: translateY(110vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes sway {
+
+            0%,
+            100% {
+                margin-left: 0;
+            }
+
+            50% {
+                margin-left: 50px;
+            }
+        }
+
         @media (max-width: 640px) {
-            .grid { grid-template-columns: 1fr; }
-            .container { padding: 30px; }
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 30px;
+            }
         }
     </style>
+    <script>
+        // Synchronize with dashboard theme manually
+        (function () {
+            const savedTheme = localStorage.getItem('polyguard_theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+
+        // Create falling leaves clustered at sides with better balance
+        window.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('leaf-container');
+            const leafIcons = ['🌿', '🍃', '🌱', '🍂', '🍁', '🍀'];
+            const count = 12; // Reduced for subtleness
+
+            for (let i = 0; i < count; i++) {
+                const leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                leaf.innerText = leafIcons[Math.floor(Math.random() * leafIcons.length)];
+
+                // Perfect balance: 50% left side, 50% right side
+                // Left: 0-25vw, Right: 75-100vw
+                const isLeft = i % 2 === 0;
+                const horizontalPos = isLeft
+                    ? Math.random() * 25
+                    : 75 + Math.random() * 25;
+
+                leaf.style.left = horizontalPos + 'vw';
+
+                // Randomize timing & speed
+                const duration = (Math.random() * 7 + 7);
+                leaf.style.animationDuration = duration + 's, ' + (Math.random() * 2 + 3) + 's';
+                leaf.style.animationDelay = (Math.random() * 15) + 's';
+
+                // Randomize size
+                const size = (Math.random() * 15 + 15);
+                leaf.style.fontSize = size + 'px';
+
+                // Vary opacity for depth feel
+                leaf.style.opacity = (Math.random() * 0.4 + 0.1);
+
+                // Slight blur to distant leaves for depth
+                if (size < 20) leaf.style.filter = 'blur(1px) opacity(0.3)';
+
+                container.appendChild(leaf);
+            }
+        });
+    </script>
 </head>
+
 <body>
+    <div id="leaf-container" class="leaf-container"></div>
     <div class="container">
         <a href="/" class="back-btn">← Back to Dashboard</a>
         <div class="header">
-            <div class="logo">PolyGuard AI</div>
-            <h1>Project Technical Profile</h1>
-            <div class="college-info">Kuppam Engineering College | ECE Department</div>
+            <div class="logo">PolyGuard</div>
+            <h1>Automated Smart Polyhouse Control System</h1>
+            <div class="college-info">Kuppam Engineering College (Autonomous) | ECE Department</div>
         </div>
 
         <div class="section">
             <div class="section-title">Leadership & Guidance</div>
             <div class="grid">
                 <div class="card">
-                    <div class="role">Project Heads</div>
-                    <div class="names">M Gopi Krishna & H Umesh</div>
+                    <div class="role">Project Guide</div>
+                    <div class="names">Mr. J Gopi Krishna</div>
+                    <div style="font-size: 11px; margin-top: 3px; color: var(--subtext)">Assistant Professor, Dept of
+                        ECE</div>
                 </div>
                 <div class="card">
-                    <div class="role">Project Guide & Motivator</div>
-                    <div class="names">M Gopi Krishna sir</div>
+                    <div class="role">Team Leader</div>
+                    <div class="names">H Umesh </div>
                 </div>
             </div>
         </div>
 
         <div class="section">
-            <div class="section-title">Development Teams</div>
+            <div class="section-title">Development Team (Team A9)</div>
             <div class="grid">
                 <div class="card">
                     <div class="role">Software Team</div>
                     <div class="names">K Aswin & K Adithya</div>
                 </div>
                 <div class="card">
-                    <div class="role">Testing Team</div>
+                    <div class="role">Hardware & Testing</div>
                     <div class="names">H Umesh & M Vamsi</div>
                 </div>
-                <div class="card" style="grid-column: span 2;">
-                    <div class="role">Hardware Team</div>
-                    <div class="names">H Umesh, K Aswin, K Adithya, M Vamsi</div>
+                <div class="card" style="grid-column: span 2; text-align: center;">
+                    <div class="role">Full Project Team</div>
+                    <div class="names" style="font-size: 16px; line-height: 1.8; letter-spacing: 0.5px;">
+                        H Umesh [22F41A0431]<br>
+                        K Aswin [22F41A0433]<br>
+                        K Adithya [22F41A0432]<br>
+                        M Vamsi [22F41A0451]
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="section">
             <div class="section-title">Project Vision</div>
-            <p>PolyGuard is an advanced IoT-based Smart Greenhouse management system designed to empower farmers with real-time telemetry and 24/7 autonomous micro-climate control. Developed as a final year engineering milestone, it integrates Firebase Real-time Database, ESP32 processing, and a professional-grade React dashboard to bridge the gap between traditional farming and precision agriculture.</p>
+            <p>The Automated Smart Polyhouse Control System is an advanced IoT-based management platform designed to
+                empower farmers with real-time telemetry and 24/7 autonomous micro-climate control. Developed as a final
+                year engineering milestone within the Department of ECE, Kuppam Engineering College (Autonomous), Andhra
+                Pradesh.</p>
         </div>
 
         <div class="footer">
-            &copy; 2026 Team A9 - Kuppam Engineering College. All technical rights reserved.
+            &copy; 2026 PolyGuard IoT Core. All rights reserved.
         </div>
     </div>
 </body>
+
 </html>

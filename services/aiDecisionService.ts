@@ -39,8 +39,12 @@ function isFuzzyMatch(input: string, target: string, threshold = 2): boolean {
 
 // 🧠 SMART INTENT DETECTOR
 function detectIntentSmart(message: string): string | null {
-  // 1. NORMALIZE (Lower, trim, remove extra internal spaces for "softwar e team")
-  let clean = message.toLowerCase().trim().replace(/\s+/g, ' ');
+  // 1. NORMALIZE (Lower, trim, remove punctuation, remove fillers)
+  let clean = message.toLowerCase().trim()
+    .replace(/[?.!,;:]/g, '') // remove punctuation
+    .replace(/\b(the|a|an)\b/g, '') // remove filler words
+    .replace(/\s+/g, ' ') // collapse spaces
+    .trim();
 
   // 2. CONVERSATIONAL FILLERS
   if (["mm", "hmm", "hm", "uh", "um"].includes(clean)) return "SMALL_TALK_ACK";
@@ -65,13 +69,21 @@ function detectIntentSmart(message: string): string | null {
 
   // 5. CHECK HUGE INTENT FILE
   const allIntents = { ...INTENTS, ...INTENTS_EXTENDED };
+  
+  // First pass: Exact matches only (Highest Priority)
+  for (const [key, phrases] of Object.entries(allIntents)) {
+    // @ts-ignore
+    if (phrases.some(p => clean === p.toLowerCase().trim())) return key;
+  }
+
+  // Second pass: Word boundary matching
   for (const [key, phrases] of Object.entries(allIntents)) {
     // @ts-ignore
     for (const phrase of phrases) {
-      const p = phrase.toLowerCase();
-      // Exact or simple inclusion
-      if (clean === p || clean.includes(p)) return key;
-      // Word boundary regex
+      const p = phrase.toLowerCase().trim();
+      if (p.length < 2) continue; // ignore single letter noise
+      
+      // Use regex to ensure we match whole words, not just part of a word
       const escaped = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(`\\b${escaped}\\b`, 'i');
       if (regex.test(clean)) return key;
@@ -289,6 +301,7 @@ export async function chatWithAgronomist(
     thresholds: typeof AUTOMATION_THRESHOLDS;
     environment: WeatherData;
     system: { time: string; date: string; demoMode: boolean; latency: string };
+    locationName?: string;
   }
 ): Promise<ChatAssistantResponse> {
 
@@ -329,7 +342,7 @@ export async function chatWithAgronomist(
   
   const npkKeywords = ["npk", "nitrogen", "potassium", "phosphorous", "phosphorus", "nutrient"];
   if (npkKeywords.some(kw => cleanMsg.includes(kw))) {
-    return { text: "⏳ **NPK Sensors:** Soil nutrient data (Nitrogen, Phosphorus, Potassium) will be available in the next major PolyGuard update! Stay tuned." };
+    return { text: "⏳ NPK Sensors: Soil nutrient data (Nitrogen, Phosphorus, Potassium) will be available in the next major PolyGuard update! Stay tuned." };
   }
   
   // Handle Multi-Actuator Control Commands
@@ -342,31 +355,31 @@ export async function chatWithAgronomist(
   const isEdu = cleanMsg.includes("what is a ") || cleanMsg.includes("what are ") || cleanMsg.includes("explain ") || cleanMsg.includes("define ");
 
   if (cleanMsg.includes("pump") && !isEdu) {
-    if (isStatus) return { text: `🚰 Water Pump Status: **${actuators.waterPump ? 'ON 🟢' : 'OFF 🔴'}** (Automation: ${autoMode}).` };
+    if (isStatus) return { text: `🚰 Water Pump Status: ${actuators.waterPump ? 'ON 🟢' : 'OFF 🔴'} (Automation: ${autoMode}).` };
     if (isTurnOn) { cmds.push({ actuator: 'waterPump', state: true }); actions.push("🚰 Activating Water Pump..."); }
     else if (isTurnOff) { cmds.push({ actuator: 'waterPump', state: false }); actions.push("🛑 Stopping Water Pump..."); }
-    else if (!cleanMsg.includes("and")) return { text: `🚰 Water Pump is **${actuators.waterPump ? 'ON' : 'OFF'}**.` };
+    else if (!cleanMsg.includes("and")) return { text: `🚰 Water Pump is ${actuators.waterPump ? 'ON' : 'OFF'}.` };
   }
   
   if ((cleanMsg.includes("fan") || cleanMsg.includes("vent")) && !isEdu) {
-    if (isStatus) return { text: `🌀 Fan Status: **${actuators.fan ? 'ON 🟢' : 'OFF 🔴'}** (Automation: ${autoMode}).` };
+    if (isStatus) return { text: `🌀 Fan Status: ${actuators.fan ? 'ON 🟢' : 'OFF 🔴'} (Automation: ${autoMode}).` };
     if (isTurnOn) { cmds.push({ actuator: 'fan', state: true }); actions.push("🌀 Starting Ventilation..."); }
     else if (isTurnOff) { cmds.push({ actuator: 'fan', state: false }); actions.push("🛑 Stopping Ventilation..."); }
-    else if (!cleanMsg.includes("and") && actions.length === 0) return { text: `🌀 Fans are **${actuators.fan ? 'ON' : 'OFF'}**.` };
+    else if (!cleanMsg.includes("and") && actions.length === 0) return { text: `🌀 Fans are ${actuators.fan ? 'ON' : 'OFF'}.` };
   }
   
   if ((cleanMsg.includes("light") || cleanMsg.includes("grow")) && !isEdu) {
-    if (isStatus) return { text: `💡 Grow Lights Status: **${actuators.growLights ? 'ON 🟢' : 'OFF 🔴'}** (Automation: ${autoMode}).` };
+    if (isStatus) return { text: `💡 Grow Lights Status: ${actuators.growLights ? 'ON 🟢' : 'OFF 🔴'} (Automation: ${autoMode}).` };
     if (isTurnOn) { cmds.push({ actuator: 'growLights', state: true }); actions.push("💡 Turning ON Grow Lights..."); }
     else if (isTurnOff) { cmds.push({ actuator: 'growLights', state: false }); actions.push("🌑 Turning OFF Grow Lights..."); }
-    else if (!cleanMsg.includes("and") && actions.length === 0) return { text: `💡 Grow Lights are **${actuators.growLights ? 'ON' : 'OFF'}**.` };
+    else if (!cleanMsg.includes("and") && actions.length === 0) return { text: `💡 Grow Lights are ${actuators.growLights ? 'ON' : 'OFF'}.` };
   }
   
   if ((cleanMsg.includes("shade") || cleanMsg.includes("net")) && !isEdu) {
-    if (isStatus) return { text: `🌤️ Shade Net Status: **${actuators.shadeNet ? 'DEPLOYED 🟢' : 'RETRACTED 🔴'}** (Automation: ${autoMode}).` };
+    if (isStatus) return { text: `🌤️ Shade Net Status: ${actuators.shadeNet ? 'DEPLOYED 🟢' : 'RETRACTED 🔴'} (Automation: ${autoMode}).` };
     if (isTurnOn) { cmds.push({ actuator: 'shadeNet', state: true }); actions.push("🌤️ Deploying Shade Net..."); }
     else if (isTurnOff) { cmds.push({ actuator: 'shadeNet', state: false }); actions.push("☀️ Retracting Shade Net..."); }
-    else if (!cleanMsg.includes("and") && actions.length === 0) return { text: `🌤️ Shade Net is **${actuators.shadeNet ? 'DEPLOYED' : 'RETRACTED'}**.` };
+    else if (!cleanMsg.includes("and") && actions.length === 0) return { text: `🌤️ Shade Net is ${actuators.shadeNet ? 'DEPLOYED' : 'RETRACTED'}.` };
   }
 
   // If any direct actuator commands were extracted!
@@ -388,46 +401,67 @@ export async function chatWithAgronomist(
 
     case "TEMP_QUERY":
     case "TEMP_HOT":
-      return { text: `🌡️ **Temperature Report:**\n` + 
-             `• Current Temp: **${safeSensors.temp}°C**\n` +
-             `• Fan Target (> ${thresholds.tempFanOn}°C): **${actuators.fan ? 'ON 🟢' : 'OFF 🔴'}**\n` +
-             `• Shade Target (> ${thresholds.tempShadeOn}°C): **${actuators.shadeNet ? 'DEPLOYED 🟢' : 'RETRACTED 🔴'}**\n` +
-             `• Automation: **${autoMode}**\n` +
-             (safeSensors.temp > thresholds.tempFanOn ? `\n⚠️ Temperature is HIGH. System is waiting for action.`  : `\n✅ Temperature is within safe limits.`)
+      return { text: `🌡️ Temperature Report:\n` + 
+             `• Current Temp: ${safeSensors.temp}°C\n` +
+             `• Fan Target (> ${thresholds.tempFanOn}°C): ${actuators.fan ? 'ON 🟢' : 'OFF 🔴'}\n` +
+             `• Shade Target (> ${thresholds.tempShadeOn}°C): ${actuators.shadeNet ? 'DEPLOYED 🟢' : 'RETRACTED 🔴'}\n` +
+             `• Automation: ${autoMode}\n` +
+             (safeSensors.temp > thresholds.tempFanOn ? `\n• Status: Temperature is HIGH. System is waiting for action.`  : `\n✅ Temperature is within safe limits.`)
       };
 
+    case "IRRIGATE_QUERY":
+    case "IRRIGATE_SHOULD":
     case "SOIL_QUERY":
     case "SOIL_DRY":
-      return { text: `💧 **Soil Moisture Report:**\n` + 
-             `• Current Moisture: **${safeSensors.soil}%**\n` +
-             `• Irrigation Threshold (Pump ON below): **${thresholds.soilMoistureMin}%**\n` +
-             `• Pump Status: **${actuators.waterPump ? 'ON 🟢' : 'OFF 🔴'}**\n` +
-             `• Automation: **${autoMode}**\n` +
-             (safeSensors.soil < thresholds.soilMoistureMin ? `\n⚠️ Soil is too DRY. System is currently ${actuators.waterPump ? 'irrigating the crops' : 'WAITING for manual Pump activation'}.` : `\n✅ Soil moisture is healthy and stable.`)
+      // Re-use Soil Query logic for "Do plants need water"
+      return { text: `💧 Soil Moisture Report:\n` + 
+             `• Current Moisture: ${safeSensors.soil}%\n` +
+             `• Irrigation Threshold: ${thresholds.soilMoistureMin}%\n` +
+             `• Pump Status: ${actuators.waterPump ? 'ON 🟢' : 'OFF 🔴'}\n` +
+             `• Automation: ${autoMode}\n` +
+             (safeSensors.soil < thresholds.soilMoistureMin ? `\n• Status: Soil is too DRY. System is ${actuators.waterPump ? 'irrigating' : 'WAITING for pump'}.` : `\n✅ Soil moisture is healthy and stable.`)
+      };
+
+    case "ACTUATOR_QUERY":
+    case "STATUS_QUERY":
+      return { text: `📊 Polyhouse Full Status Report\n` + 
+             `• Temperature: ${safeSensors.temp}°C\n` +
+             `• Humidity: ${safeSensors.humid}%\n` +
+             `• Soil Moisture: ${safeSensors.soil}%\n` +
+             `• Light Intensity: ${safeSensors.light} lux\n` +
+             `• Water Pump: ${actuators.waterPump ? 'ON 🟢' : 'OFF 🔴'}\n` +
+             `• Ventilation Fan: ${actuators.fan ? 'ON 🟢' : 'OFF 🔴'}\n` +
+             `• Shade Net: ${actuators.shadeNet ? 'DEPLOYED 🟢' : 'RETRACTED 🔴'}\n` +
+             `• Grow Lights: ${actuators.growLights ? 'ON 🟢' : 'OFF 🔴'}\n` + 
+             `• System Latency: ${system.latency}\n` +
+             `• Automation: ${autoMode}`
       };
 
     case "HUMIDITY_QUERY": 
-      return { text: `💨 **Humidity Report:**\n` + 
-             `• Current Humidity: **${safeSensors.humid}%**\n` +
-             `• Max Limit (Fan ON above): **${thresholds.humidityFanOn}%**\n` +
-             `• Fan Status: **${actuators.fan ? 'ON 🟢' : 'OFF 🔴'}**\n` +
-             `• Automation: **${autoMode}**\n` +
-             (safeSensors.humid > thresholds.humidityFanOn ? `\n⚠️ Humidity is HIGH. Ventilation is recommended to prevent fungal growth.` : `\n✅ Humidity is excellent.`)
+      return { text: `💨 Humidity Report:\n` + 
+             `• Current Humidity: ${safeSensors.humid}%\n` +
+             `• Max Limit: ${thresholds.humidityFanOn}%\n` +
+             `• Fan Status: ${actuators.fan ? 'ON 🟢' : 'OFF 🔴'}\n` +
+             `• Automation: ${autoMode}\n` +
+             (safeSensors.humid > thresholds.humidityFanOn ? `\n• Status: Humidity is HIGH. Ventilation recommended.` : `\n✅ Humidity is excellent.`)
       };
 
     case "LIGHT_QUERY": 
-      return { text: `☀️ **Light Intensity Report:**\n` + 
-             `• Current Light: **${safeSensors.light} lux**\n` +
-             `• Grow Lights Status: **${actuators.growLights ? 'ON 🟢' : 'OFF 🔴'}**\n` +
-             `• Automation: **${autoMode}**` 
+      return { text: `☀️ Light Intensity Report:\n` + 
+             `• Current Light: ${safeSensors.light} lux\n` +
+             `• Grow Lights Status: ${actuators.growLights ? 'ON 🟢' : 'OFF 🔴'}\n` +
+             `• Automation: ${autoMode}` 
       };
 
     case "NPK_QUERY":
     case "NPK_PHOSPHORUS": 
     case "NPK_NITROGEN": {
-      return { text: "⏳ **NPK Sensors:** Soil nutrient data (Nitrogen, Phosphorus, Potassium) will be available in the next major PolyGuard update! Stay tuned." };
+      return { text: "⏳ NPK Sensors: Soil nutrient data (Nitrogen, Phosphorus, Potassium) will be available in the next major PolyGuard update! Stay tuned." };
     }
     
+    case "LOCATION":
+      return { text: `📍 Polyhouse Location: This facility is currently operating in ${ctx.locationName || 'Kuppam'}.` };
+
     case "WEATHER_QUERY":
       return { text: getRandomResponse("WEATHER_KUPPAM", {
         temp: weather.temp.toString(),
@@ -462,7 +496,7 @@ export async function chatWithAgronomist(
       const gText = GREETING_TEXTS[Math.floor(Math.random() * GREETING_TEXTS.length)];
       return {
         text: gText,
-        buttons: getRandomButtons(3 + Math.floor(Math.random() * 2)) // 3 or 4 buttons
+        buttons: getRandomButtons(2)
       };
     }
              

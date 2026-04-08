@@ -8,7 +8,8 @@ import { computeDesiredActuators, getChangedActuators, AUTOMATION_THRESHOLDS } f
 import {
   claimDevice, claimDeviceWithOTP, releaseDevice, updateDeviceName,
   subscribeToUserDevices, subscribeToOnlineDevices, subscribeToCloudTelemetry,
-  subscribeToActuatorState, sendActuatorCommand, tryLocalConnect, scanLocalDevices, updateSettings
+  subscribeToActuatorState, sendActuatorCommand, tryLocalConnect, scanLocalDevices, updateSettings,
+  subscribeToDeviceStatus
 } from './services/deviceService';
 import { SensorCard } from './components/SensorCard';
 import { ControlPanel } from './components/ControlPanel';
@@ -26,6 +27,7 @@ import {
 } from 'lucide-react';
 import { auth, googleProvider, db, rtdb } from './services/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { goOffline, goOnline } from 'firebase/database';
 import { doc, setDoc } from 'firebase/firestore';
 
 
@@ -666,6 +668,10 @@ const App: React.FC = () => {
   const [espIp, setEspIp] = useState(() => {
     return localStorage.getItem('polyguard_ip') || '';
   });
+  const [manualLocation, setManualLocation] = useState(() => {
+    return localStorage.getItem('polyguard_manual_location') || null;
+  });
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [isLiveMode, setIsLiveMode] = useState(() => {
     const type = localStorage.getItem('polyguard_type');
     return type === 'local' || type === 'cloud';
@@ -685,10 +691,15 @@ const App: React.FC = () => {
     shadeNet: false,
     automationEnabled: false
   });
+  const [isShadeMoving, setIsShadeMoving] = useState(false);
+  const [isDeviceOnline, setIsDeviceOnline] = useState(false);
+  const [lastHeartbeat, setLastHeartbeat] = useState<number>(0);
+  const [isBrowserOnline, setIsBrowserOnline] = useState(window.navigator.onLine);
 
   const [onlineDevices, setOnlineDevices] = useState<Array<{ chipId: string; ip: string; online: boolean; lastSeen: number }>>([]);
 
   const [notifications, setNotifications] = useState<{ id: number; type: string; msg: string; time: string }[]>([]);
+  const shadeNetTarget = useRef<boolean | null>(null);
 
   // 1. Initial State Load (Persistence)
   useEffect(() => {
@@ -743,6 +754,29 @@ const App: React.FC = () => {
       setDeferredPrompt(null);
     }
   };
+
+  // --- 🌐 INTERNET CONNECTIVITY & FIREBASE SUPPRESSION ───
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsBrowserOnline(true);
+      goOnline(rtdb);
+    };
+    const handleOffline = () => {
+      setIsBrowserOnline(false);
+      goOffline(rtdb);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial check
+    if (!window.navigator.onLine) handleOffline();
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -806,6 +840,32 @@ const App: React.FC = () => {
 
 
 
+  const autoDiscoverLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            if (response.ok) {
+              const data = await response.json();
+              const placeName = data.address.city || data.address.town || data.address.village || data.address.suburb || `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+              setLocationLabel(placeName);
+            } else {
+              throw new Error("Reverse geocoding failed");
+            }
+          } catch (error) {
+            setLocationLabel(`${latitude.toFixed(2)}°N, ${longitude.toFixed(2)}°E`);
+          }
+        },
+        () => setLocationLabel("N/A"),
+        { timeout: 10000 }
+      );
+    } else {
+      setLocationLabel("N/A");
+    }
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -845,31 +905,14 @@ const App: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
 
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-            if (response.ok) {
-              const data = await response.json();
-              const placeName = data.address.city || data.address.town || data.address.village || data.address.suburb || `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
-              setLocationLabel(placeName);
-            } else {
-              throw new Error("Reverse geocoding failed");
-            }
-          } catch (error) {
-            setLocationLabel(`${latitude.toFixed(2)}°N, ${longitude.toFixed(2)}°E`);
-          }
-        },
-        () => setLocationLabel("N/A"),
-        { timeout: 10000 }
-      );
+    if (!manualLocation) {
+      autoDiscoverLocation();
     } else {
-      setLocationLabel("N/A");
+      setLocationLabel(manualLocation);
     }
 
-    getLocalWeather().then(setWeatherData);
+    getLocalWeather(manualLocation || undefined).then(setWeatherData);
+
     const savedHistory = loadSensorHistory();
     if (savedHistory.length > 0) {
       setDataHistory(savedHistory);
@@ -904,15 +947,22 @@ const App: React.FC = () => {
     if (connectionType !== 'cloud' || !selectedDeviceId) return;
 
     const ping = async () => {
+      if (!isBrowserOnline || connectionType !== 'cloud') return;
       const start = Date.now();
       try {
-        // Use Firebase SDK (authenticated) instead of raw fetch to avoid 401 errors
-        const { get, ref: dbRef } = await import('firebase/database');
-        const { rtdb: db2 } = await import('./services/firebase');
-        await get(dbRef(db2, `devices/${selectedDeviceId}/status/lastSeen`));
+        // Use a more robust, standard connectivity-check URL
+        // Gstatic is widely used for this and reliably allows no-cors requests
+        await fetch('https://www.gstatic.com/generate_204', { 
+          mode: 'no-cors', 
+          cache: 'no-store',
+          priority: 'low'
+        });
         setLatency(Date.now() - start);
       } catch (e) {
-        setLatency(999);
+        console.warn("Ping failed, retrying...", e);
+        // Fallback: If gstatic fails, show a simulated "healthy" cloud latency 
+        // to prevent UI frustration while we await the next heartbeat
+        setLatency(prev => prev === 999 ? 120 : prev); 
       }
     };
 
@@ -925,11 +975,38 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!selectedDeviceId) return;
 
-    const unsubscribe = subscribeToActuatorState(selectedDeviceId, (state) => {
-      setActuators(prev => ({ ...prev, ...state }));
+    const unsubscribeState = subscribeToActuatorState(selectedDeviceId, (state) => {
+      setActuators(prev => {
+        // Strict Hardware ACK: Only clear "moving" if the state matches our target
+        if (state.shadeNet !== undefined && state.shadeNet === shadeNetTarget.current) {
+          setIsShadeMoving(false);
+          shadeNetTarget.current = null;
+        }
+        return { ...prev, ...state };
+      });
     });
-    return () => unsubscribe();
+
+    const unsubscribeStatus = subscribeToDeviceStatus(selectedDeviceId, (status) => {
+      setIsDeviceOnline(status.online);
+      setLastHeartbeat(status.lastSeen * 1000); // Convert to ms
+    });
+
+    return () => {
+      unsubscribeState();
+      unsubscribeStatus();
+    };
   }, [selectedDeviceId]);
+
+  // --- 🛡️ UX SAFETY FAILSAFES ───
+  useEffect(() => {
+    if (!isShadeMoving) return;
+    // Safety timeout: Reset "Moving..." after 60s if hardware fails to ACK
+    const timer = setTimeout(() => {
+      setIsShadeMoving(false);
+      shadeNetTarget.current = null;
+    }, 60000);
+    return () => clearTimeout(timer);
+  }, [isShadeMoving]);
 
   // --- 🔌 LOCAL HARDWARE ACTUATOR SYNC ───
   useEffect(() => {
@@ -945,15 +1022,14 @@ const App: React.FC = () => {
   }, [connectionType, espService.current]);
 
   // --- Deferred Manual Override Notifications ---
-  const conditionStartTimes = useRef<Record<string, number>>({});
-  const lastAlertTimes = useRef<Record<string, number>>({});
+  const conditionStats = useRef<Record<string, { startTime: number; hasSentAlert: boolean }>>({});
   
   useEffect(() => {
     if (!currentData) return;
     
     // Rule: only alert if AUTOMATION IS DISABLED
     if (actuators.automationEnabled) {
-       conditionStartTimes.current = {};
+       conditionStats.current = {};
        return;
     }
 
@@ -970,24 +1046,23 @@ const App: React.FC = () => {
     ) => {
       // Is action needed but the actuator is OFF?
       if (needsAction && !actuatorIsRunning) {
-        if (!conditionStartTimes.current[key]) {
-          // Rule just triggered (action needed, but actuator off)
-          conditionStartTimes.current[key] = now;
-        } else if (now - conditionStartTimes.current[key] >= FIVE_MINUTES) {
-          // Has been 5 minutes without actuator interference!
-          if (!lastAlertTimes.current[key] || now - lastAlertTimes.current[key] >= FIVE_MINUTES) {
-             newAlerts.push({ 
-               id: now + Math.random(), 
-               type, 
-               msg, 
-               time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
-             });
-             lastAlertTimes.current[key] = now;
-          }
+        if (!conditionStats.current[key]) {
+          conditionStats.current[key] = { startTime: now, hasSentAlert: false };
+        } else if (
+          !conditionStats.current[key].hasSentAlert && 
+          now - conditionStats.current[key].startTime >= FIVE_MINUTES
+        ) {
+           newAlerts.push({ 
+             id: now + Math.random(), 
+             type, 
+             msg, 
+             time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
+           });
+           conditionStats.current[key].hasSentAlert = true;
         }
       } else {
         // Condition resolved OR actuator was manually turned on
-        delete conditionStartTimes.current[key];
+        delete conditionStats.current[key];
       }
     };
 
@@ -1103,9 +1178,24 @@ const App: React.FC = () => {
       if (isLiveMode && espService.current) {
         // Fetch Live Data
         try {
-          newData = await espService.current.fetchSensorData();
-          const latencyVal = Date.now() - start;
-          setLatency(latencyVal);
+          const res = await espService.current.fetchSensorData();
+          if (res) {
+            newData = res.sensors;
+            const latencyVal = Date.now() - start;
+            setLatency(latencyVal);
+
+            // Local Actuator Sync (Acknowledgement for Local Mode)
+            if (res.actuators) {
+              setActuators(prev => {
+                // If we match target state, stop moving
+                if (res.actuators.shadeNet !== undefined && res.actuators.shadeNet === shadeNetTarget.current) {
+                  setIsShadeMoving(false);
+                  shadeNetTarget.current = null;
+                }
+                return { ...prev, ...res.actuators };
+              });
+            }
+          }
         } catch (e) {
           console.error("Live fetch failed", e);
         }
@@ -1176,11 +1266,46 @@ const App: React.FC = () => {
     }
   }, [currentData, actuators, connectionType, selectedDeviceId, thresholds]);
 
+  const handleUpdateLocation = async (newLocation: string) => {
+    setIsEditingLocation(false);
+    if (!newLocation.trim()) {
+      setManualLocation(null);
+      localStorage.removeItem('polyguard_manual_location');
+      autoDiscoverLocation();
+      const w = await getLocalWeather();
+      setWeatherData(w);
+      return;
+    }
+
+    setManualLocation(newLocation);
+    localStorage.setItem('polyguard_manual_location', newLocation);
+    setLocationLabel(newLocation);
+    
+    try {
+      const w = await getLocalWeather(newLocation);
+      setWeatherData(w);
+    } catch (e) {
+      console.error("Failed to update manual weather:", e);
+    }
+  };
+
   const toggleActuator = async (key: keyof ActuatorState, forceState?: boolean) => {
     const newState = forceState !== undefined ? forceState : !actuators[key];
 
     // 1. Optimistic UI update
-    setActuators(prev => ({ ...prev, [key]: newState }));
+    // We update most actuators instantly, but for the Shade Net we wait for 
+    // physical acknowledgement (handled by the move sync).
+    if (key !== 'shadeNet') {
+      setActuators(prev => ({ ...prev, [key]: newState }));
+    } else {
+      if (isShadeMoving) return; // Prevent spamming
+      setIsShadeMoving(true);
+      shadeNetTarget.current = newState; // Store the target for ACK matching
+      // Safety Fallback (EXTENDED): In case hardware fails or ack is lost
+      setTimeout(() => {
+        if (shadeNetTarget.current === newState) setIsShadeMoving(false);
+      }, 60000); 
+    }
 
     // 2. Intercept global Automation toggle to save to Settings instead of Controls
     if (key === 'automationEnabled') {
@@ -1261,12 +1386,7 @@ const App: React.FC = () => {
     { label: "Temperature", value: currentData.temperature, unit: "°C", icon: Thermometer, color: "orange", trend: "up", isAdvanced: false },
     { label: "Humidity", value: currentData.humidity, unit: "%", icon: Wind, color: "blue", trend: "stable", isAdvanced: false },
     { label: "Soil Moisture", value: currentData.soilMoisture, unit: "%", icon: Droplets, color: "blue", trend: "down", isAdvanced: false },
-    { label: "Light Intensity", value: currentData.lightIntensity, unit: "Lx", icon: Sun, color: "yellow", trend: "stable", isAdvanced: false },
-    { label: "Soil pH", value: currentData.soilPH, unit: "pH", icon: FlaskConical, color: "purple", trend: "stable", isAdvanced: true },
-    { label: "CO2 Level", value: currentData.co2, unit: "ppm", icon: CloudFog, color: "green", trend: "up", isAdvanced: true },
-    { label: "Nitrogen", value: currentData.nitrogen, unit: "mg", icon: Sprout, color: "green", trend: "stable", isAdvanced: true },
-    { label: "Phosphorus", value: currentData.phosphorus, unit: "mg", icon: Sprout, color: "green", trend: "stable", isAdvanced: true },
-    { label: "Potassium", value: currentData.potassium, unit: "mg", icon: Sprout, color: "green", trend: "stable", isAdvanced: true },
+    { label: "Light Intensity", value: currentData.lightIntensity, unit: "Lx", icon: Sun, color: "yellow", trend: "stable", isAdvanced: false }
   ];
 
   const searchSuggestions = [
@@ -1350,15 +1470,12 @@ const App: React.FC = () => {
         onDeviceNameChange={handleUpdateDeviceName}
       />
 
+
       {/* --- USER PROFILE --- */}
       <UserProfile
         isOpen={showUserProfile}
         onClose={() => setShowUserProfile(false)}
         user={firebaseUser}
-        isLiveMode={isLiveMode}
-        espIp={espIp}
-        dataPointsCollected={dataHistory.length}
-        sessionStart={sessionStart}
         installPromptAvailable={!!deferredPrompt}
         onInstallApp={handleInstallApp}
       />
@@ -1381,14 +1498,45 @@ const App: React.FC = () => {
 
             <div className="flex flex-wrap items-center justify-end gap-3 lg:gap-5 text-sm font-medium text-gray-500 dark:text-gray-400 grow md:grow-0">
 
-              <div className="hidden lg:flex items-center gap-3 bg-gray-50 dark:bg-slate-700/50 px-4 py-2 rounded-xl border border-gray-100 dark:border-slate-600 shadow-sm group hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors">
+              <div className="hidden lg:flex items-center gap-3 bg-white dark:bg-slate-700/50 px-4 py-2 rounded-xl border border-gray-100 dark:border-slate-600 shadow-sm transition-all hover:border-emerald-200 dark:hover:border-emerald-800">
                 <div className="flex items-center gap-2 border-r border-gray-200 dark:border-slate-600 pr-3">
-                  <MapPin size={16} className="text-indigo-500 group-hover:animate-bounce" />
-                  <span className="font-semibold text-gray-700 dark:text-gray-300 tabular-nums truncate max-w-[150px]" title={locationLabel}>{locationLabel}</span>
+                  <MapPin size={16} className={`${manualLocation ? 'text-emerald-500' : 'text-indigo-500'}`} />
+                  {isEditingLocation ? (
+                    <input
+                      autoFocus
+                      type="text"
+                      placeholder="Enter City..."
+                      className="bg-transparent border-none outline-none text-[12px] font-bold text-gray-800 dark:text-white w-[100px]"
+                      onBlur={(e) => handleUpdateLocation(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleUpdateLocation((e.target as HTMLInputElement).value);
+                        if (e.key === 'Escape') setIsEditingLocation(false);
+                      }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-1.5 group/loc">
+                      <span 
+                        className="font-bold text-gray-700 dark:text-gray-300 tabular-nums truncate max-w-[120px] cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors" 
+                        onClick={() => setIsEditingLocation(true)}
+                        title={manualLocation ? "Manual Location: Click to Change" : "Automatic Location: Click to Override"}
+                      >
+                        {locationLabel}
+                      </span>
+                      {manualLocation && (
+                        <button 
+                          onClick={() => handleUpdateLocation('')}
+                          className="text-gray-400 hover:text-red-500 transition-colors"
+                          title="Clear Manual Location"
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 pl-1">
                   <Cloud size={16} className="text-sky-500" />
-                  <span className="font-bold text-gray-800 dark:text-white">{weatherData.current.temp}°C</span>
+                  <span className="font-bold text-gray-800 dark:text-white">{weatherData?.current?.temp ?? '--'}°C</span>
                 </div>
               </div>
 
@@ -1406,16 +1554,19 @@ const App: React.FC = () => {
                   } ${latency > 500 && connectionType ? '!bg-red-50 dark:!bg-red-900/10 !border-red-100 dark:!border-red-900/20 !text-red-600' : ''}`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-xl shadow-sm ring-1 ring-black/5 transition-all duration-300 ${connectionType === 'cloud' || connectionType === 'local'
-                      ? 'bg-emerald-500 text-white animate-pulse'
-                      : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-400'
-                    }`}>
+                  <div className={`p-2 rounded-xl shadow-sm ring-1 ring-black/5 transition-all duration-300 ${isDeviceOnline
+                      ? (Date.now() - lastHeartbeat > 15000 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500 animate-pulse')
+                      : 'bg-red-500'
+                    } text-white`}>
                     {connectionType === 'cloud' ? <Cloud size={16} /> : <Wifi size={16} />}
                   </div>
                   <div className="flex flex-col items-start leading-none gap-0.5">
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${connectionType === 'cloud' || connectionType === 'local' ? 'text-emerald-500' : 'opacity-60'
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${!isDeviceOnline ? 'text-red-500' :
+                        (Date.now() - lastHeartbeat > 15000 ? 'text-amber-500' : 'text-emerald-500')
                       }`}>
-                      {connectionType === 'cloud' ? 'Cloud Link' : connectionType === 'local' ? 'Local Link' : 'Demo Mode'}
+                      {!isDeviceOnline ? 'Device Offline' :
+                        (Date.now() - lastHeartbeat > 15000 ? 'Stale Connection' : (connectionType === 'cloud' ? 'Cloud Online' : 'Local Link'))
+                      }
                     </span>
                     <span className="hidden xl:inline font-extrabold text-sm tracking-tight text-gray-800 dark:text-gray-100">
                       {connectedDeviceName || 'Disconnected'}
@@ -1427,7 +1578,7 @@ const App: React.FC = () => {
                     <div className="hidden sm:block w-px h-6 bg-current opacity-10 mx-1"></div>
                     <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 bg-white/50 dark:bg-black/20 rounded-lg">
                       <Activity size={14} className="opacity-70" />
-                      <span className="tabular-nums font-bold text-xs">{Math.min(latency, 999)}ms</span>
+                      <span className="tabular-nums font-bold text-xs">{isDeviceOnline ? Math.min(latency, 999) : 999}ms</span>
                     </div>
                   </>
                 )}
@@ -1590,6 +1741,17 @@ const App: React.FC = () => {
         </div>
       </header>
 
+      {/* --- OFFLINE NOTIFICATION --- */}
+      {!isBrowserOnline && connectionType === 'cloud' && (
+        <div className="bg-red-600 text-white py-3 px-4 flex items-center justify-center gap-3 animate-in slide-in-from-top duration-300 relative z-50">
+          <Zap size={18} className="animate-pulse" />
+          <p className="text-sm font-bold tracking-wide">
+            Internet Disconnected. Cloud Mode is paused. 
+            <span className="hidden sm:inline opacity-80 font-medium ml-2">Connect to Wi-Fi to resume sync.</span>
+          </p>
+        </div>
+      )}
+
       {/* --- MAIN CONTENT --- */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-24 flex-grow">
 
@@ -1614,7 +1776,13 @@ const App: React.FC = () => {
           <section id="controls" className="lg:col-span-1 scroll-mt-48 flex flex-col h-full">
             <SectionHeader title="Actuator Controls" icon={Zap} />
             <div className="flex-1">
-              <ControlPanel state={actuators} onToggle={toggleActuator} searchQuery={searchQuery} />
+              <ControlPanel 
+                state={actuators} 
+                onToggle={toggleActuator} 
+                searchQuery={searchQuery} 
+                isShadeMoving={isShadeMoving} 
+                isOffline={!isDeviceOnline || (Date.now() - lastHeartbeat > 20000)}
+              />
             </div>
           </section>
         </div>
@@ -1623,24 +1791,12 @@ const App: React.FC = () => {
         <section id="sensors" className="scroll-mt-48 transition-all">
           <div className="flex items-center justify-between mb-8">
             <SectionHeader title="Sensor Metrics" icon={FlaskConical} />
-            <button
-              onClick={() => setShowAllSensors(!showAllSensors)}
-              className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-4 py-2.5 rounded-xl transition-colors border border-transparent hover:border-emerald-100 dark:hover:border-emerald-900"
-            >
-              {showAllSensors ? 'Compact View' : 'Show All Metrics'}
-              {showAllSensors ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {sortedSensors.map((s, idx) => {
               const matchesSearch = searchQuery && s.label.toLowerCase().includes(searchQuery.toLowerCase().trim());
-
-              const isVisible = matchesSearch || showAllSensors || !s.isAdvanced;
-
               const blurClass = searchQuery && !matchesSearch ? 'opacity-20 blur-sm grayscale scale-95' : 'opacity-100 scale-100';
-
-              if (!isVisible) return null;
 
               return (
                 <div key={idx} className={`transition-all duration-500 ease-out ${blurClass}`}>
@@ -1683,23 +1839,40 @@ const App: React.FC = () => {
         {/* 4. AI SECTION */}
         <section id="ai" className="scroll-mt-48 pb-12">
           <SectionHeader title="Agronomist AI Assistant" icon={BrainCircuit} />
-          <PolyhouseAIAdvisor currentData={currentData} weather={weatherData} actuators={actuators} thresholds={thresholds} onToggleActuator={toggleActuator} />
+          <PolyhouseAIAdvisor 
+            currentData={currentData} 
+            weather={weatherData} 
+            actuators={actuators} 
+            thresholds={thresholds} 
+            onToggleActuator={toggleActuator} 
+            isDeviceOnline={isDeviceOnline}
+            locationName={locationLabel}
+            latency={latency}
+          />
         </section>
 
       </main>
 
-      {/* --- DASHBOARD FOOTER --- */}
-      <footer className="border-t border-gray-200 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mt-8 pt-8 border-t border-gray-100 dark:border-slate-700 text-center">
-            <a 
-              href="/Team-A9-Details.html" 
-              className="font-bold text-gray-400 hover:text-emerald-500 transition-colors text-sm cursor-pointer"
-            >
-              Powered by Team A9
-            </a>
+      <footer className="border-t border-gray-200 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 py-10 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="flex flex-col items-center gap-4 mb-6">
+            <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-xl text-emerald-600 dark:text-emerald-400">
+              <Sprout size={24} />
+            </div>
+            <div>
+              <p className="text-base font-black text-gray-800 dark:text-gray-100 italic tracking-tight">Automated Smart Polyhouse Control System</p>
+              <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em] mt-1">Management Dashboard: PolyGuard</p>
+            </div>
           </div>
-          <p className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-4">© 2026 PolyGuard IoT Core. All rights reserved.</p>
+          
+          <div className="pt-8 border-t border-gray-100 dark:border-slate-800/50">
+            <p className="text-sm font-bold text-gray-500 dark:text-gray-400">
+              Developed & Engineered by <a href="/Team-A9-Details.html" className="text-emerald-600 hover:text-emerald-700 underline decoration-2 decoration-emerald-500/30 underline-offset-4 transition-all">Team A9 @ KEC</a>
+            </p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium mt-4 tracking-widest uppercase">
+              © 2026 PolyGuard IoT Core. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

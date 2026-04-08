@@ -68,7 +68,29 @@ const resolveIPWeather = async (resolve: (data: WeatherData) => void) => {
   }
 };
 
-export const getLocalWeather = async (): Promise<WeatherData> => {
+export const fetchCoordinatesByCity = async (city: string): Promise<{ lat: number; lon: number; name: string } | null> => {
+  try {
+    const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
+    const data = await response.json();
+    if (data.results && data.results.length > 0) {
+      const { latitude, longitude, name } = data.results[0];
+      return { lat: latitude, lon: longitude, name };
+    }
+    return null;
+  } catch (error) {
+    console.error("Geocoding failed:", error);
+    return null;
+  }
+};
+
+export const getLocalWeather = async (city?: string): Promise<WeatherData> => {
+  if (city) {
+    const coords = await fetchCoordinatesByCity(city);
+    if (coords) {
+      return fetchLiveWeather(coords.lat, coords.lon);
+    }
+  }
+
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
       resolveIPWeather(resolve);

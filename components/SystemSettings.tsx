@@ -65,12 +65,12 @@ const SLIDERS: ThresholdSlider[] = [
   },
   // SHADE NET
   {
-    key: 'tempShadeOn', label: 'Shade Net ON above (Temp)', icon: <Sun size={16} />,
-    unit: '°C', min: 0, max: 100, step: 0.5, color: 'red', description: 'Shade net deploys when temperature exceeds this'
+    key: 'tempShadeOn', label: 'Shade Net Close above (Temp)', icon: <Sun size={16} />,
+    unit: '°C', min: 0, max: 100, step: 0.5, color: 'red', description: 'Shade net deploys (shades) when temperature exceeds this'
   },
   {
-    key: 'tempShadeOff', label: 'Shade Net OFF below (Temp)', icon: <Sun size={16} />,
-    unit: '°C', min: 0, max: 100, step: 0.5, color: 'red', description: 'Shade net retracts when temperature drops below this'
+    key: 'tempShadeOff', label: 'Shade Net Open below (Temp)', icon: <Sun size={16} />,
+    unit: '°C', min: 0, max: 100, step: 0.5, color: 'red', description: 'Shade net retracts (sunlight) when temperature drops below this'
   },
 ];
 
@@ -150,7 +150,7 @@ export const SystemSettings: React.FC<Props> = ({
         <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-700 shrink-0">
           <div>
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">System Settings</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Hardware info & automation thresholds</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Automation thresholds & device info</p>
           </div>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
             <X size={20} />
@@ -221,21 +221,6 @@ export const SystemSettings: React.FC<Props> = ({
                 {isLiveMode ? <Wifi size={12} className="animate-pulse" /> : <WifiOff size={12} />}
                 {isLiveMode ? 'Live' : 'No Link'}
               </div>
-            </div>
-
-            {/* Relay pin map */}
-            <div className="grid grid-cols-2 gap-2 mt-3">
-              {[
-                { name: '💧 Water Pump', pin: 'D5 (GPIO14)' },
-                { name: '💨 Fan',        pin: 'D6 (GPIO12)' },
-                { name: '💡 Grow Lights',pin: 'D7 (GPIO13)' },
-                { name: '🌿 Shade Net',  pin: 'D8 (GPIO15)' },
-              ].map(r => (
-                <div key={r.name} className="bg-gray-50 dark:bg-slate-900/50 rounded-xl px-3 py-2 flex justify-between items-center">
-                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{r.name}</span>
-                  <span className="text-xs font-mono font-bold text-gray-400 dark:text-gray-500">{r.pin}</span>
-                </div>
-              ))}
             </div>
           </section>
 

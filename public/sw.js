@@ -37,8 +37,13 @@ self.addEventListener('fetch', (event) => {
   // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
-  // Skip Firebase/internal API calls to avoid issues with offline auth
-  if (event.request.url.includes('firebase') || event.request.url.includes('google')) {
+  // Skip Firebase, Google, and local hardware (.local) requests
+  if (
+    event.request.url.includes('firebase') || 
+    event.request.url.includes('google') ||
+    event.request.url.includes('.local') ||
+    event.request.url.includes('localhost')
+  ) {
     return;
   }
 

@@ -14,18 +14,19 @@ type GeminiAdvisorProps = {
   actuators: ActuatorState
   thresholds: any
   onToggleActuator: (key: keyof ActuatorState, forceState?: boolean) => void
+  isDeviceOnline: boolean
+  locationName: string
+  latency: number
 }
 
 type ChatMessage = { role: 'user' | 'ai'; text: string; buttons?: string[]; timestamp: string }
 
-export const PolyhouseAIAdvisor: React.FC<GeminiAdvisorProps> = ({ currentData, weather, actuators, thresholds, onToggleActuator }) => {
+export const PolyhouseAIAdvisor: React.FC<GeminiAdvisorProps> = ({ currentData, weather, actuators, thresholds, onToggleActuator, isDeviceOnline, locationName, latency }) => {
   const [analysis, setAnalysis] = useState<{ analysis: string; recommendations: string[] } | null>(null)
+  
+  // ... rest of state unchanged ...
   const [analysisLoading, setAnalysisLoading] = useState(false)
-
   const [chatInput, setChatInput] = useState('')
-
-  // Lazy initializer: reads localStorage ONCE at first render with NO state update.
-  // This prevents any scroll-to-bottom effect from firing on page load or refresh.
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>(() => {
     try {
       const saved = localStorage.getItem("polyhouse_chat");
@@ -37,11 +38,7 @@ export const PolyhouseAIAdvisor: React.FC<GeminiAdvisorProps> = ({ currentData, 
 
   const [chatLoading, setChatLoading] = useState(false)
   const chatEndRef = useRef<HTMLDivElement | null>(null)
-
-  // Track how many messages existed at initial load to detect only NEW additions
   const knownLengthRef = useRef(chatHistory.length)
-
-  // Refs for tracking latest data without triggering endless re-renders
   const latestData = useRef(currentData);
   const latestActuators = useRef(actuators);
   const latestThresholds = useRef(thresholds);
@@ -51,15 +48,11 @@ export const PolyhouseAIAdvisor: React.FC<GeminiAdvisorProps> = ({ currentData, 
   useEffect(() => { latestThresholds.current = thresholds; }, [thresholds]);
 
   useEffect(() => {
-    // initial analysis
     fetchAnalysis();
-    // periodic update every 2 minutes
     const id = setInterval(fetchAnalysis, 120000);
     return () => clearInterval(id);
   }, []);
 
-  // Use refs in analysis to ensure we always fetch based on the absolute newest data 
-  // without destroying and re-creating the 2-minute timer every 3 seconds.
   async function fetchAnalysis() {
     if (!latestData.current) return;
     setAnalysisLoading(true);
@@ -69,16 +62,14 @@ export const PolyhouseAIAdvisor: React.FC<GeminiAdvisorProps> = ({ currentData, 
     } catch (e) {
       setAnalysis({ analysis: 'Analysis failed (local)', recommendations: [] });
     } finally {
-      setTimeout(() => setAnalysisLoading(false), 500); // Small UI buffer for fast local execution
+      setTimeout(() => setAnalysisLoading(false), 500);
     }
   }
 
-  // Persist chat history to localStorage on every change
   useEffect(() => {
     localStorage.setItem("polyhouse_chat", JSON.stringify(chatHistory));
   }, [chatHistory]);
 
-  // Only scroll when chatHistory LENGTH GROWS (new message sent), not on initial load
   useEffect(() => {
     if (chatHistory.length > knownLengthRef.current) {
       if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -112,20 +103,31 @@ export const PolyhouseAIAdvisor: React.FC<GeminiAdvisorProps> = ({ currentData, 
             time: new Date().toLocaleTimeString(),
             date: new Date().toLocaleDateString(),
             demoMode: false,
-            latency: '24ms'
-          }
+            latency: `${latency}ms`
+          },
+          locationName: locationName
         }
       );
 
+      let finalAiText = reply.text;
+      const deviceOffline = !isDeviceOnline;
+
+      // Intercept command confirmation if hardware is offline
+      if (deviceOffline && reply.commands && reply.commands.length > 0) {
+        finalAiText = "⚠️ I'm sorry, I can't do that right now. The Polyhouse hardware is currently **offline**. Please check your device connection.";
+      }
+
       const aiMessage = {
         role: 'ai' as const,
-        text: reply.text,
+        text: finalAiText,
         buttons: reply.buttons,
         timestamp: new Date().toISOString()
       };
 
       setChatHistory((h) => [...h, aiMessage]);
-      if (reply.commands && reply.commands.length > 0) {
+
+      // Only toggle if online
+      if (!deviceOffline && reply.commands && reply.commands.length > 0) {
         reply.commands.forEach(cmd => onToggleActuator(cmd.actuator, cmd.state));
       }
     } catch (error) {

@@ -17,7 +17,7 @@ interface EnvironmentalChartProps {
 
 export const EnvironmentalChart: React.FC<EnvironmentalChartProps> = ({ data }) => {
   const [activeTab, setActiveTab] =
-    useState<'climate' | 'soil' | 'nutrients'>('climate');
+    useState<'climate' | 'soil' | 'light'>('climate');
 
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm h-full flex flex-col transition-colors">
@@ -25,11 +25,11 @@ export const EnvironmentalChart: React.FC<EnvironmentalChartProps> = ({ data }) 
       {/* HEADER */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-          Analytics
+          Environmental Data Analysis
         </h3>
 
         <div className="bg-gray-100 dark:bg-slate-700 p-1 rounded-lg flex gap-1">
-          {['climate', 'soil', 'nutrients'].map(tab => (
+          {['climate', 'soil', 'light'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -39,7 +39,7 @@ export const EnvironmentalChart: React.FC<EnvironmentalChartProps> = ({ data }) 
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
-              {tab === 'nutrients' ? 'Nutrients & CO2' : tab}
+              {tab === 'light' ? 'Light Intensity' : tab === 'soil' ? 'Soil Moisture' : 'Climate'}
             </button>
           ))}
         </div>
@@ -62,6 +62,11 @@ export const EnvironmentalChart: React.FC<EnvironmentalChartProps> = ({ data }) 
               <linearGradient id="colorHum" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
                 <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+              </linearGradient>
+
+              <linearGradient id="colorLight" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#eab308" stopOpacity={0.1} />
+                <stop offset="95%" stopColor="#eab308" stopOpacity={0} />
               </linearGradient>
             </defs>
 
@@ -133,15 +138,6 @@ export const EnvironmentalChart: React.FC<EnvironmentalChartProps> = ({ data }) 
               <>
                 <Area
                   type="monotone"
-                  dataKey="soilPH"
-                  stroke="#8b5cf6"
-                  strokeWidth={2}
-                  fillOpacity={0.1}
-                  fill="#8b5cf6"
-                  name="Soil pH"
-                />
-                <Area
-                  type="monotone"
                   dataKey="soilMoisture"
                   stroke="#3b82f6"
                   strokeWidth={2}
@@ -152,25 +148,15 @@ export const EnvironmentalChart: React.FC<EnvironmentalChartProps> = ({ data }) 
               </>
             )}
 
-            {activeTab === 'nutrients' && (
+            {activeTab === 'light' && (
               <>
                 <Area
                   type="monotone"
-                  dataKey="co2"
-                  stroke="#64748b"
+                  dataKey="lightIntensity"
+                  stroke="#eab308"
                   strokeWidth={2}
-                  fillOpacity={0.1}
-                  fill="#64748b"
-                  name="CO2"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="nitrogen"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  fillOpacity={0.1}
-                  fill="#10b981"
-                  name="Nitrogen"
+                  fill="url(#colorLight)"
+                  name="Light (Lx)"
                 />
               </>
             )}

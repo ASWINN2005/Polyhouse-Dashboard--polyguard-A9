@@ -10,8 +10,8 @@ export class ESP8266Service {
 
   // ---------- TELEMETRY ----------
   // Fetches from the root "/" endpoint served by the ESP8266 firmware.
-  // The firmware JSON fields are: temperature, humidity, light_lux, soil_moisture
-  async fetchSensorData(): Promise<SensorData | null> {
+  // The firmware JSON fields are: temperature, humidity, light_lux, soil_moisture, shade_net, auto
+  async fetchSensorData(): Promise<{ sensors: SensorData, actuators: Partial<ActuatorState> } | null> {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
@@ -27,18 +27,22 @@ export class ESP8266Service {
       const raw = await res.json();
 
       return {
-        // Firmware doesn't provide a timestamp — use current time
-        timestamp: new Date().toLocaleTimeString(),
-        temperature: raw.temperature ?? 0,
-        humidity: raw.humidity ?? 0,
-        soilMoisture: raw.soil_moisture ?? 0,
-        lightIntensity: raw.light_lux ?? 0,
-        // Firmware doesn't have these sensors — default to 0
-        soilPH: 0,
-        co2: 0,
-        nitrogen: 0,
-        phosphorus: 0,
-        potassium: 0
+        sensors: {
+          timestamp: new Date().toLocaleTimeString(),
+          temperature: raw.temperature ?? 0,
+          humidity: raw.humidity ?? 0,
+          soilMoisture: raw.soil_moisture ?? 0,
+          lightIntensity: raw.light_lux ?? 0,
+          soilPH: 0,
+          co2: 0,
+          nitrogen: 0,
+          phosphorus: 0,
+          potassium: 0
+        },
+        actuators: {
+          shadeNet: raw.shade_net === true || raw.shade_net === "true",
+          automationEnabled: raw.auto === true || raw.auto === "true"
+        }
       };
     } catch (e) {
       console.error('ESP8266 Fetch Error:', e);

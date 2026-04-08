@@ -206,7 +206,8 @@ export const INTENTS = {
   STATUS_QUERY: [
     "status", "overall", "condition", "system health", "is everything okay", 
     "polyhouse health", "overall summary", "current state", "system check", 
-    "how are the crops", "is it safe", "general status", "dashboard summary"
+    "how are the crops", "is it safe", "general status", "dashboard summary",
+    "show full report", "give me a report", "report"
   ],
 
   LATENCY_QUERY: [
