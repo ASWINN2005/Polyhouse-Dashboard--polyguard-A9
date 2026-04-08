@@ -53,12 +53,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     return (
       <button
         onClick={onClick}
-        disabled={isMoving || isOffline}
+        disabled={isMoving}
         className={`
           relative flex flex-col items-center justify-center p-5 xl:p-6 rounded-2xl border-2 transition-all duration-200 group w-full
-          ${isDimmed || isOffline ? 'opacity-40 grayscale-[0.5]' : 'opacity-100'}
+          ${isDimmed ? 'opacity-40 grayscale-[0.5]' : 'opacity-100'}
           ${active ? `${activeColors[colorClass]} shadow-lg scale-[1.02]` : inactiveClass}
-          ${isMoving ? 'bg-orange-100 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 cursor-not-allowed opacity-90' : (isOffline ? 'cursor-not-allowed' : 'active:scale-95')}
+          ${isMoving ? 'bg-orange-100 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 cursor-not-allowed opacity-90' : 'active:scale-95'}
         `}
       >
         <div className={`p-3 rounded-full mb-3 transition-colors duration-300 ${active ? 'bg-white/20' : 'bg-gray-100 dark:bg-slate-700 group-hover:bg-gray-200 dark:group-hover:bg-slate-600'}`}>
@@ -129,15 +129,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           active={state.shadeNet}
           colorClass="orange"
           onClick={() => handleActuatorClick('shadeNet')}
-          isMoving={isShadeMoving}
         />
         
-        {isOffline && (
-          <div className="col-span-2 mt-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 p-4 rounded-2xl flex items-center justify-center gap-3 text-red-600 dark:text-red-400">
-            <Zap size={20} className="animate-bounce" />
-            <span className="font-bold text-sm">Hardware connection lost. Controls disabled.</span>
-          </div>
-        )}
+
       </div>
 
       <div className="mt-4 xl:mt-6 text-center h-8 flex items-center justify-center shrink-0">

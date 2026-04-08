@@ -988,7 +988,7 @@ const App: React.FC = () => {
 
     const unsubscribeStatus = subscribeToDeviceStatus(selectedDeviceId, (status) => {
       setIsDeviceOnline(status.online);
-      setLastHeartbeat(status.lastSeen * 1000); // Convert to ms
+      setLastHeartbeat(Date.now()); // Use local time instead of device uptime
     });
 
     return () => {
@@ -1293,19 +1293,7 @@ const App: React.FC = () => {
     const newState = forceState !== undefined ? forceState : !actuators[key];
 
     // 1. Optimistic UI update
-    // We update most actuators instantly, but for the Shade Net we wait for 
-    // physical acknowledgement (handled by the move sync).
-    if (key !== 'shadeNet') {
-      setActuators(prev => ({ ...prev, [key]: newState }));
-    } else {
-      if (isShadeMoving) return; // Prevent spamming
-      setIsShadeMoving(true);
-      shadeNetTarget.current = newState; // Store the target for ACK matching
-      // Safety Fallback (EXTENDED): In case hardware fails or ack is lost
-      setTimeout(() => {
-        if (shadeNetTarget.current === newState) setIsShadeMoving(false);
-      }, 60000); 
-    }
+    setActuators(prev => ({ ...prev, [key]: newState }));
 
     // 2. Intercept global Automation toggle to save to Settings instead of Controls
     if (key === 'automationEnabled') {
