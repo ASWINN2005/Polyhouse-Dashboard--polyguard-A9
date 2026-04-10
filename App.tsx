@@ -552,8 +552,8 @@ const ConnectionModal = ({
             onClick={handleConnect}
             disabled={mode === 'local' && !ip.trim()}
             className={`w-full py-4 font-bold rounded-xl transition-colors shadow-lg disabled:opacity-40 disabled:cursor-not-allowed ${mode === 'demo'
-                ? 'bg-gray-600 hover:bg-gray-700 text-white shadow-gray-500/20'
-                : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/30'
+              ? 'bg-gray-600 hover:bg-gray-700 text-white shadow-gray-500/20'
+              : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/30'
               }`}
           >
             {mode === 'demo' ? '▶ Launch Demo Mode' : '📡 Connect to Local Device'}
@@ -952,8 +952,8 @@ const App: React.FC = () => {
       try {
         // Use a more robust, standard connectivity-check URL
         // Gstatic is widely used for this and reliably allows no-cors requests
-        await fetch('https://www.gstatic.com/generate_204', { 
-          mode: 'no-cors', 
+        await fetch('https://www.gstatic.com/generate_204', {
+          mode: 'no-cors',
           cache: 'no-store',
           priority: 'low'
         });
@@ -962,7 +962,7 @@ const App: React.FC = () => {
         console.warn("Ping failed, retrying...", e);
         // Fallback: If gstatic fails, show a simulated "healthy" cloud latency 
         // to prevent UI frustration while we await the next heartbeat
-        setLatency(prev => prev === 999 ? 120 : prev); 
+        setLatency(prev => prev === 999 ? 120 : prev);
       }
     };
 
@@ -988,7 +988,7 @@ const App: React.FC = () => {
 
     const unsubscribeStatus = subscribeToDeviceStatus(selectedDeviceId, (status) => {
       setIsDeviceOnline(status.online);
-      setLastHeartbeat(Date.now()); // Use local time instead of device uptime
+      setLastHeartbeat(status.lastSeen * 1000); // Convert to ms
     });
 
     return () => {
@@ -1023,25 +1023,25 @@ const App: React.FC = () => {
 
   // --- Deferred Manual Override Notifications ---
   const conditionStats = useRef<Record<string, { startTime: number; hasSentAlert: boolean }>>({});
-  
+
   useEffect(() => {
     if (!currentData) return;
-    
+
     // Rule: only alert if AUTOMATION IS DISABLED
     if (actuators.automationEnabled) {
-       conditionStats.current = {};
-       return;
+      conditionStats.current = {};
+      return;
     }
 
     const now = Date.now();
     const newAlerts: any[] = [];
     const FIVE_MINUTES = 5 * 60 * 1000;
-    
+
     const checkCondition = (
-      key: string, 
-      needsAction: boolean, 
-      actuatorIsRunning: boolean, 
-      type: string, 
+      key: string,
+      needsAction: boolean,
+      actuatorIsRunning: boolean,
+      type: string,
       msg: string
     ) => {
       // Is action needed but the actuator is OFF?
@@ -1049,16 +1049,16 @@ const App: React.FC = () => {
         if (!conditionStats.current[key]) {
           conditionStats.current[key] = { startTime: now, hasSentAlert: false };
         } else if (
-          !conditionStats.current[key].hasSentAlert && 
+          !conditionStats.current[key].hasSentAlert &&
           now - conditionStats.current[key].startTime >= FIVE_MINUTES
         ) {
-           newAlerts.push({ 
-             id: now + Math.random(), 
-             type, 
-             msg, 
-             time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
-           });
-           conditionStats.current[key].hasSentAlert = true;
+          newAlerts.push({
+            id: now + Math.random(),
+            type,
+            msg,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          });
+          conditionStats.current[key].hasSentAlert = true;
         }
       } else {
         // Condition resolved OR actuator was manually turned on
@@ -1067,18 +1067,18 @@ const App: React.FC = () => {
     };
 
     checkCondition(
-      'temp_hot', 
-      currentData.temperature > thresholds.tempFanOn, 
-      actuators.fan, 
-      'warning', 
+      'temp_hot',
+      currentData.temperature > thresholds.tempFanOn,
+      actuators.fan,
+      'warning',
       `Action Needed: Temp High (${currentData.temperature.toFixed(1)}°C) for 5 mins. Please turn ON Fans.`
     );
-    
+
     checkCondition(
-      'soil_dry', 
-      currentData.soilMoisture < thresholds.soilMoistureMin, 
-      actuators.waterPump, 
-      'warning', 
+      'soil_dry',
+      currentData.soilMoisture < thresholds.soilMoistureMin,
+      actuators.waterPump,
+      'warning',
       `Action Needed: Soil Dry (${currentData.soilMoisture.toFixed(0)}%) for 5 mins. Please start Pump.`
     );
 
@@ -1280,7 +1280,7 @@ const App: React.FC = () => {
     setManualLocation(newLocation);
     localStorage.setItem('polyguard_manual_location', newLocation);
     setLocationLabel(newLocation);
-    
+
     try {
       const w = await getLocalWeather(newLocation);
       setWeatherData(w);
@@ -1503,15 +1503,15 @@ const App: React.FC = () => {
                     />
                   ) : (
                     <div className="flex items-center gap-1.5 group/loc">
-                      <span 
-                        className="font-bold text-gray-700 dark:text-gray-300 tabular-nums truncate max-w-[120px] cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors" 
+                      <span
+                        className="font-bold text-gray-700 dark:text-gray-300 tabular-nums truncate max-w-[120px] cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                         onClick={() => setIsEditingLocation(true)}
                         title={manualLocation ? "Manual Location: Click to Change" : "Automatic Location: Click to Override"}
                       >
                         {locationLabel}
                       </span>
                       {manualLocation && (
-                        <button 
+                        <button
                           onClick={() => handleUpdateLocation('')}
                           className="text-gray-400 hover:text-red-500 transition-colors"
                           title="Clear Manual Location"
@@ -1536,21 +1536,21 @@ const App: React.FC = () => {
               <button
                 onClick={() => setShowConnectionModal(true)}
                 className={`flex items-center gap-4 px-4 py-2.5 rounded-2xl border shadow-sm transition-all hover:scale-[1.02] active:scale-95 group ${connectionType === 'demo' ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/20 text-amber-600' :
-                    connectionType === 'cloud' ? 'bg-purple-50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-900/20 text-purple-600' :
-                      connectionType === 'local' ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/20 text-emerald-600' :
-                        'bg-gray-100 dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-500'
+                  connectionType === 'cloud' ? 'bg-purple-50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-900/20 text-purple-600' :
+                    connectionType === 'local' ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/20 text-emerald-600' :
+                      'bg-gray-100 dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-500'
                   } ${latency > 500 && connectionType ? '!bg-red-50 dark:!bg-red-900/10 !border-red-100 dark:!border-red-900/20 !text-red-600' : ''}`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-xl shadow-sm ring-1 ring-black/5 transition-all duration-300 ${isDeviceOnline
-                      ? (Date.now() - lastHeartbeat > 15000 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500 animate-pulse')
-                      : 'bg-red-500'
+                    ? (Date.now() - lastHeartbeat > 15000 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500 animate-pulse')
+                    : 'bg-red-500'
                     } text-white`}>
                     {connectionType === 'cloud' ? <Cloud size={16} /> : <Wifi size={16} />}
                   </div>
                   <div className="flex flex-col items-start leading-none gap-0.5">
                     <span className={`text-[10px] font-bold uppercase tracking-widest ${!isDeviceOnline ? 'text-red-500' :
-                        (Date.now() - lastHeartbeat > 15000 ? 'text-amber-500' : 'text-emerald-500')
+                      (Date.now() - lastHeartbeat > 15000 ? 'text-amber-500' : 'text-emerald-500')
                       }`}>
                       {!isDeviceOnline ? 'Device Offline' :
                         (Date.now() - lastHeartbeat > 15000 ? 'Stale Connection' : (connectionType === 'cloud' ? 'Cloud Online' : 'Local Link'))
@@ -1734,7 +1734,7 @@ const App: React.FC = () => {
         <div className="bg-red-600 text-white py-3 px-4 flex items-center justify-center gap-3 animate-in slide-in-from-top duration-300 relative z-50">
           <Zap size={18} className="animate-pulse" />
           <p className="text-sm font-bold tracking-wide">
-            Internet Disconnected. Cloud Mode is paused. 
+            Internet Disconnected. Cloud Mode is paused.
             <span className="hidden sm:inline opacity-80 font-medium ml-2">Connect to Wi-Fi to resume sync.</span>
           </p>
         </div>
@@ -1764,11 +1764,11 @@ const App: React.FC = () => {
           <section id="controls" className="lg:col-span-1 scroll-mt-48 flex flex-col h-full">
             <SectionHeader title="Actuator Controls" icon={Zap} />
             <div className="flex-1">
-              <ControlPanel 
-                state={actuators} 
-                onToggle={toggleActuator} 
-                searchQuery={searchQuery} 
-                isShadeMoving={isShadeMoving} 
+              <ControlPanel
+                state={actuators}
+                onToggle={toggleActuator}
+                searchQuery={searchQuery}
+                isShadeMoving={isShadeMoving}
                 isOffline={!isDeviceOnline || (Date.now() - lastHeartbeat > 20000)}
               />
             </div>
@@ -1827,12 +1827,12 @@ const App: React.FC = () => {
         {/* 4. AI SECTION */}
         <section id="ai" className="scroll-mt-48 pb-12">
           <SectionHeader title="Agronomist AI Assistant" icon={BrainCircuit} />
-          <PolyhouseAIAdvisor 
-            currentData={currentData} 
-            weather={weatherData} 
-            actuators={actuators} 
-            thresholds={thresholds} 
-            onToggleActuator={toggleActuator} 
+          <PolyhouseAIAdvisor
+            currentData={currentData}
+            weather={weatherData}
+            actuators={actuators}
+            thresholds={thresholds}
+            onToggleActuator={toggleActuator}
             isDeviceOnline={isDeviceOnline}
             locationName={locationLabel}
             latency={latency}
@@ -1852,7 +1852,7 @@ const App: React.FC = () => {
               <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em] mt-1">Management Dashboard: PolyGuard</p>
             </div>
           </div>
-          
+
           <div className="pt-8 border-t border-gray-100 dark:border-slate-800/50">
             <p className="text-sm font-bold text-gray-500 dark:text-gray-400">
               Developed & Engineered by <a href="/Team-A9-Details.html" className="text-emerald-600 hover:text-emerald-700 underline decoration-2 decoration-emerald-500/30 underline-offset-4 transition-all">Team A9 @ KEC</a>

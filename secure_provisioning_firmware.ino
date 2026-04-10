@@ -315,8 +315,16 @@ void setup() {
   Firebase.setBool(fbData, basePath + "/status/online", true);
 
   // CORS-Enabled Local API (Works locally instantly)
-  server.on("/", []() {
+  server.on("/", HTTP_OPTIONS, []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
+    server.sendHeader("Access-Control-Allow-Private-Network", "true");
+    server.send(204);
+  });
+  server.on("/", HTTP_GET, []() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Private-Network", "true");
     String j = "{\"temperature\":" + String(tempVal, 1) +
                ",\"humidity\":" + String(humVal, 1) +
                ",\"light_lux\":" + String(luxVal, 0) +
@@ -325,8 +333,16 @@ void setup() {
                ",\"auto\":" + String(autoEnabled ? "true" : "false") + "}";
     server.send(200, "application/json", j);
   });
-  server.on("/state", []() {
+  server.on("/state", HTTP_OPTIONS, []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
+    server.sendHeader("Access-Control-Allow-Private-Network", "true");
+    server.send(204);
+  });
+  server.on("/state", HTTP_GET, []() {
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Private-Network", "true");
     String j = "{\"fan\":" + String(fanOn ? "true" : "false") +
                ",\"waterPump\":" + String(pumpOn ? "true" : "false") +
                ",\"growLights\":" + String(lightOn ? "true" : "false") +
@@ -335,12 +351,14 @@ void setup() {
   });
   server.on("/control", HTTP_OPTIONS, []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.sendHeader("Access-Control-Allow-Methods", "POST");
-    server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+    server.sendHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    server.sendHeader("Access-Control-Allow-Headers", "*");
+    server.sendHeader("Access-Control-Allow-Private-Network", "true");
     server.send(204);
   });
   server.on("/control", HTTP_POST, []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader("Access-Control-Allow-Private-Network", "true");
     String b = server.arg("plain");
     // Change states instantly, push to Firebase so Cloud doesn't overwrite it
     if (b.indexOf("\"waterPump\"") >= 0) {
